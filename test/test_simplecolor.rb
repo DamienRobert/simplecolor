@@ -1,10 +1,10 @@
 require 'helper'
 require 'simplecolor'
 
-class TestSimplecolor < MiniTest::Test
+class TestSimpleColor < MiniTest::Test
 
   def test_version
-    version = Simplecolor.const_get('VERSION')
+    version = SimpleColor.const_get('VERSION')
 
     assert(!version.empty?, 'should have a VERSION constant')
   end

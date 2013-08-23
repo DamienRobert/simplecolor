@@ -1,6 +1,11 @@
 name: simplecolor
-summary: "TODO: Summary"
-description: "TODO: Description"
+summary: "Simple color library"
+description: "A simple library for coloring text output. Heavily inspired
+  from term-ansicolor and rainbow, I recommend using these gems for more
+  complex color needs. By default this gem does not do any core extension.
+  When mixed in String it only add two methods: color and uncolored. Paint
+  is another gem similar to this one, but with more powerfull shortcuts
+  definitions."
 license: MIT
 authors: Damien Robert
 email: Damien.Olivier.Robert+gems@gmail.com

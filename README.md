@@ -47,6 +47,8 @@ definitions.
 
 ## Requirements
 
+None.
+
 ## Install
 
     $ gem install simplecolor
@@ -61,4 +63,4 @@ definitions.
 
 Copyright (c) 2013 Damien Robert
 
-See {file:LICENSE.txt} for details.
+MIT License. See {file:LICENSE.txt} for details.

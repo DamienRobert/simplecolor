@@ -1,0 +1,11 @@
+name: simplecolor
+summary: "TODO: Summary"
+description: "TODO: Description"
+license: MIT
+authors: Damien Robert
+email: Damien.Olivier.Robert+gems@gmail.com
+homepage: https://rubygems.org/gems/simplecolor
+
+development_dependencies:
+  rubygems-tasks: ~> 0.2
+  yard: ~> 0.8

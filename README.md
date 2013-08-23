@@ -1,6 +1,7 @@
 # simplecolor
 
-* [Homepage](https://rubygems.org/gems/simplecolor)
+* [Homepage](https://github.com/DamienRobert/simplecolor)
+* [Gem](https://rubygems.org/gems/simplecolor)
 * [Documentation](http://rubydoc.info/gems/simplecolor/frames)
 * [Email](mailto:Damien.Olivier.Robert+gems@gmail.com)
 

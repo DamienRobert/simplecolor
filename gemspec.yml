@@ -9,7 +9,7 @@ description: "A simple library for coloring text output. Heavily inspired
 license: MIT
 authors: Damien Robert
 email: Damien.Olivier.Robert+gems@gmail.com
-homepage: https://rubygems.org/gems/simplecolor
+homepage: https://github.com/DamienRobert/simplecolor
 
 development_dependencies:
   rubygems-tasks: ~> 0.2

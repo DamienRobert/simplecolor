@@ -10,3 +10,10 @@ class TestSimpleColor < MiniTest::Test
   end
 
 end
+
+describe SimpleColor do
+  it "Can be mixed in strings" do
+    SimpleColor.mix_in_string
+    "red".color(:red).must_equal "\e[31mred\e[0m"
+  end
+end

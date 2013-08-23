@@ -74,8 +74,11 @@ module SimpleColor
   #after SimpleColor.mix_in_string, one can do
   #"blue".color(:blue,:bold)
   include SimpleColor::Mixin
+  def mix_in(klass)
+    klass.class_eval {include SimpleColor::Mixin}
+  end
   def mix_in_string
-    String.class_eval {include SimpleColor::Mixin}
+    SimpleColor.mix_in(String)
   end
 
   extend self

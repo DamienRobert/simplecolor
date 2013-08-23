@@ -25,9 +25,10 @@ module SimpleColor
   #foo=Foo.new()
   #foo.color(:red)
   module Mixin
+
     # Returns an uncolored version of the string, that is all
     # ANSI-sequences are stripped from the string.
-    def uncolored(string = nil) # :yields:
+    def uncolor(string = nil)
       if block_given?
         yield.to_str.gsub(COLORED_REGEXP, '')
       elsif string.respond_to?(:to_str)
@@ -43,7 +44,7 @@ module SimpleColor
     #Examples:
     #    SimpleColor.color("blue", :blue, :bold)
     #    SimpleColor.color(:blue,:bold) { "blue" }
-    #    SimpleColor.color(:blue,:bold) << "blue" << c.color(:clear)
+    #    SimpleColor.color(:blue,:bold) << "blue" << SimpleColor.color(:clear)
     #pareil pour uncolored
     def color(*args)
       if respond_to?(:to_str)
@@ -62,9 +63,9 @@ module SimpleColor
       elsif arg.empty?
         return arg
       else
-        matched = arg.match(/^(\e\[([\d;]+)m)*/)
+        matched = arg.match(SimpleColor::COLOR_REGEXP)
         arg.insert(matched.end(0), SimpleColor.colorattributes(*args))
-        arg.concat(SimpleColor.colorattributes(:clear)) unless arg =~ /\e\[0m$/
+        arg.concat(SimpleColor.colorattributes(:clear)) unless arg =~ SimpleColor::CLEAR_REGEXP
         return arg
       end
     end

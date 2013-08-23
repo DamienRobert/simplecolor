@@ -1,54 +1,112 @@
 module SimpleColor
 
-  COLORS = Hash[[
-    [ :clear , 0 ], # String#clear is already used to empty string in Ruby 1.9
-    [ :reset , 0 ], # synonym for :clear
-    [ :bold , 1 ],
-    [ :dark , 2 ],
-    [ :italic , 3 ], # not widely implemented
-    [ :underline , 4 ],
-    [ :underscore , 4 ], # synonym for :underline
-    [ :blink , 5 ],
-    [ :rapid_blink , 6 ], # not widely implemented
-    [ :negative , 7 ], # no reverse because of String#reverse
-    [ :concealed , 8 ],
-    [ :strikethrough , 9 ], # not widely implemented
-    [ :black , 30 ],
-    [ :red , 31 ],
-    [ :green , 32 ],
-    [ :yellow , 33 ],
-    [ :blue , 34 ],
-    [ :magenta , 35 ],
-    [ :cyan , 36 ],
-    [ :white , 37 ],
-    [ :on_black , 40 ],
-    [ :on_red , 41 ],
-    [ :on_green , 42 ],
-    [ :on_yellow , 43 ],
-    [ :on_blue , 44 ],
-    [ :on_magenta , 45 ],
-    [ :on_cyan , 46 ],
-    [ :on_white , 47 ],
-    [ :intense_black , 90 ], # High intensity, aixterm (works in OS X)
-    [ :intense_red , 91 ],
-    [ :intense_green , 92 ],
-    [ :intense_yellow , 93 ],
-    [ :intense_blue , 94 ],
-    [ :intense_magenta , 95 ],
-    [ :intense_cyan , 96 ],
-    [ :intense_white , 97 ],
-    [ :on_intense_black , 100 ], # High intensity background, aixterm (works in OS X)
-    [ :on_intense_red , 101 ],
-    [ :on_intense_green , 102 ],
-    [ :on_intense_yellow , 103 ],
-    [ :on_intense_blue , 104 ],
-    [ :on_intense_magenta , 105 ],
-    [ :on_intense_cyan , 106 ],
-    [ :on_intense_white , 107 ]
-  ]]
-
+  # Regular expression to scan if there is a clear ANSI effect at end of string
+  CLEAR_REGEXP = /\e\[0m$/
+  # Regular expression to find the end of the current ANSI sequence at
+  # beginning of string, to wrap around in the correct order.
+  COLOR_REGEXP = /^(\e\[([\d;]+)m)*/
   # Regular expression that is used to scan for ANSI-sequences while
   # uncoloring strings.
   COLORED_REGEXP = /\e\[(?:(?:[349]|10)[0-7]|[0-9])?m/
+  
+  #Stolen from paint gem
+  #http://en.wikipedia.org/wiki/ANSI_escape_code
+  
+  # Basic colors (often, the color differs when using the bright effect)
+  # Final color will be 30 + value for foreground and 40 + value for background
+  # 90+value for intense foreground, 100+value for intense background
+  ANSI_COLORS = {
+    :black   => 0,
+    :red     => 1,
+    :green   => 2,
+    :yellow  => 3,
+    :blue    => 4,
+    :magenta => 5,
+    :cyan    => 6,
+    :white   => 7,
+    :default => 9,
+  }
+  
+  ANSI_EFFECTS = {
+    :reset         => 0,  :nothing         => 0,  # usually supported
+    :clear         => 0,  :normal         => 0,  # usually supported
+    :bright        => 1,  :bold            => 1,  # usually supported
+    :faint         => 2,
+    :italic        => 3,
+    :underline     => 4,                          # usually supported
+    :blink         => 5,  :slow_blink      => 5,
+    :rapid_blink   => 6,
+    :inverse       => 7,  :swap            => 7,  # usually supported
+    :conceal       => 8,  :hide            => 9,
+    :default_font  => 10,
+    :font0 => 10, :font1 => 11, :font2 => 12, :font3 => 13, :font4 => 14,
+    :font5 => 15, :font6 => 16, :font7 => 17, :font8 => 18, :font9 => 19,
+    :fraktur       => 20,
+    :bright_off    => 21, :bold_off        => 21, :double_underline => 21,
+    :clean         => 22,
+    :italic_off    => 23, :fraktur_off     => 23,
+    :underline_off => 24,
+    :blink_off     => 25,
+    :inverse_off   => 26, :positive        => 26,
+    :conceal_off   => 27, :show            => 27, :reveal           => 27,
+    :crossed_off   => 29, :crossed_out_off => 29,
+    :frame         => 51,
+    :encircle      => 52,
+    :overline      => 53,
+    :frame_off     => 54, :encircle_off    => 54,
+    :overline_off  => 55,
+  }
+
+  ANSI_COLORS_FOREGROUND = {
+    :black   => 30,
+    :red     => 31,
+    :green   => 32,
+    :yellow  => 33,
+    :blue    => 34,
+    :magenta => 35,
+    :cyan    => 36,
+    :white   => 37,
+    :default => 39,
+  }
+
+  ANSI_COLORS_BACKGROUND = {
+    :on_black   => 40,
+    :on_red     => 41,
+    :on_green   => 42,
+    :on_yellow  => 43,
+    :on_blue    => 44,
+    :on_magenta => 45,
+    :on_cyan    => 46,
+    :on_white   => 47,
+    :on_default => 49,
+  }
+
+  ANSI_COLORS_INTENSE_FOREGROUND = {
+    :intense_black   => 90,
+    :intense_red     => 91,
+    :intense_green   => 92,
+    :intense_yellow  => 93,
+    :intense_blue    => 94,
+    :intense_magenta => 95,
+    :intense_cyan    => 96,
+    :intense_white   => 97,
+    :intense_default => 99,
+  }
+
+  ANSI_COLORS_INTENSE_BACKGROUND = {
+    :on_instance_black   => 100,
+    :on_instance_red     => 101,
+    :on_instance_green   => 102,
+    :on_instance_yellow  => 103,
+    :on_instance_blue    => 104,
+    :on_instance_magenta => 105,
+    :on_instance_cyan    => 106,
+    :on_instance_white   => 107,
+    :on_instance_default => 109,
+  }
+
+  #attributes that can be specified to the color method
+  COLORS = [ANSI_EFFECTS,ANSI_COLORS_FOREGROUND, ANSI_COLORS_BACKGROUND, ANSI_COLORS_INTENSE_FOREGROUND, ANSI_COLORS_INTENSE_BACKGROUND].inject({}){ |a,b| a.merge(b) }
+
 
 end

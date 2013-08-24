@@ -48,6 +48,21 @@ SimpleColor.mix_in_string
 "\e[34m\e[1mblue\e[0m".uncolor
 ~~~
 
+## Usage
+
+There is a global switch `SimpleColor.enabled` to select the color mode.
+The possible values are
+
+- `true`: activate color output
+- `false`: desactivate all color output
+- `:shell`: activate color output for use in zsh prompt
+
+When using a color escape sequence in a prompt in zsh, zsh will count the
+escape sequences as part of the length of a prompt. To mark them as non
+printable, one has to wrap them around `%{` and `%}`.
+With `SimpleColor.enabled=:shell` this is done automatically by
+`SimpleColor`.
+
 ## Requirements
 
 None.

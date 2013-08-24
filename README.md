@@ -54,7 +54,9 @@ None.
 
 ## Install
 
-    $ gem install simplecolor
+~~~ sh
+$ gem install simplecolor
+~~~
 
 ## Todo
 

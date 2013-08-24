@@ -36,15 +36,17 @@ definitions.
 
 ## Examples
 
-    require 'simplecolor'
+~~~ ruby
+require 'simplecolor'
 
-    SimpleColor.color("blue", :blue, :bold)
-    SimpleColor.color(:blue,:bold) { "blue" }
-    SimpleColor.color(:blue,:bold) << "blue" << SimpleColor.color(:clear)
+SimpleColor.color("blue", :blue, :bold)
+SimpleColor.color(:blue,:bold) { "blue" }
+SimpleColor.color(:blue,:bold) << "blue" << SimpleColor.color(:clear)
 
-    SimpleColor.mix_in_string
-    "blue".color(:blue,:bold)
-    "\e[34m\e[1mblue\e[0m".uncolor
+SimpleColor.mix_in_string
+"blue".color(:blue,:bold)
+"\e[34m\e[1mblue\e[0m".uncolor
+~~~
 
 ## Requirements
 

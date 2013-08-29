@@ -16,18 +16,21 @@ module SimpleColor
   end
 
   #Usage:
-  #class Foo
-  #  include SimpleColor::Mixin
-  #  def to_str
-  #    ...
+  #
+  #@example
+  #  class Foo
+  #    include SimpleColor::Mixin
+  #    def to_str
+  #      ...
+  #    end
   #  end
-  #end
-  #foo=Foo.new()
-  #foo.color(:red)
+  #  foo=Foo.new()
+  #  foo.color(:red)
   module Mixin
 
     # Returns an uncolored version of the string, that is all
     # ANSI-sequences are stripped from the string.
+    # @see: color
     def uncolor(string = nil)
       if block_given?
         yield.to_str.gsub(COLORED_REGEXP, '')
@@ -41,11 +44,10 @@ module SimpleColor
     end
 
     #wrap self or the first argument with colors
-    #Examples:
-    #    SimpleColor.color("blue", :blue, :bold)
-    #    SimpleColor.color(:blue,:bold) { "blue" }
-    #    SimpleColor.color(:blue,:bold) << "blue" << SimpleColor.color(:clear)
-    #pareil pour uncolored
+    #@example ploum
+    #  SimpleColor.color("blue", :blue, :bold)
+    #  SimpleColor.color(:blue,:bold) { "blue" }
+    #  SimpleColor.color(:blue,:bold) << "blue" << SimpleColor.color(:clear)
     def color(*args)
       if respond_to?(:to_str)
         arg=self.dup
@@ -72,7 +74,7 @@ module SimpleColor
   end
 
   #after SimpleColor.mix_in_string, one can do
-  #"blue".color(:blue,:bold)
+  #`"blue".color(:blue,:bold)`
   include SimpleColor::Mixin
   def mix_in(klass)
     klass.class_eval {include SimpleColor::Mixin}

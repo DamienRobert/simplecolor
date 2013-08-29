@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'minitest/autorun'
-require 'minitest/spec'
+require 'minitest/pride'
 
 class MiniTest::Test
 end

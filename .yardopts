@@ -1,1 +1,1 @@
---markup markdown --title "simplecolor Documentation" --protected
+--markup markdown -M kramdown --title "simplecolor Documentation" --protected

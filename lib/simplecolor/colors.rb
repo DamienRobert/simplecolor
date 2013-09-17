@@ -9,8 +9,8 @@ module SimpleColor
   # uncoloring strings.
   COLORED_REGEXP = /\e\[(?:(?:[349]|10)[0-7]|[0-9])?m/
   
-  #Stolen from paint gem
-  #http://en.wikipedia.org/wiki/ANSI_escape_code
+  #Stolen from the paint gem.
+  #See alosa http://en.wikipedia.org/wiki/ANSI_escape_code
   
   # Basic colors (often, the color differs when using the bright effect)
   # Final color will be 30 + value for foreground and 40 + value for background
@@ -94,19 +94,18 @@ module SimpleColor
   }
 
   ANSI_COLORS_INTENSE_BACKGROUND = {
-    :on_instance_black   => 100,
-    :on_instance_red     => 101,
-    :on_instance_green   => 102,
-    :on_instance_yellow  => 103,
-    :on_instance_blue    => 104,
-    :on_instance_magenta => 105,
-    :on_instance_cyan    => 106,
-    :on_instance_white   => 107,
-    :on_instance_default => 109,
+    :on_intense_black   => 100,
+    :on_intense_red     => 101,
+    :on_intense_green   => 102,
+    :on_intense_yellow  => 103,
+    :on_intense_blue    => 104,
+    :on_intense_magenta => 105,
+    :on_intense_cyan    => 106,
+    :on_intense_white   => 107,
+    :on_intense_default => 109,
   }
 
   #attributes that can be specified to the color method
   COLORS = [ANSI_EFFECTS,ANSI_COLORS_FOREGROUND, ANSI_COLORS_BACKGROUND, ANSI_COLORS_INTENSE_FOREGROUND, ANSI_COLORS_INTENSE_BACKGROUND].inject({}){ |a,b| a.merge(b) }
-
 
 end

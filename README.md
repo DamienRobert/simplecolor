@@ -73,6 +73,8 @@ None.
 $ gem install simplecolor
 ~~~
 
+This install `v0.1.0`, the current `master` version may not work.
+
 ## Todo
 
 - Support 256 colors

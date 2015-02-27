@@ -55,6 +55,10 @@ describe SimpleColor do
 			"red".color(:red).must_equal "\e[31mred\e[0m"
 		end
 
+		it "Uncolor works on strings" do
+			"red".color(:red).uncolor.must_equal "red"
+		end
+
 		it "color does not affects the string" do
 			s="red"
 			s.color(:red)

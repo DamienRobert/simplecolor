@@ -60,15 +60,16 @@ module SimpleColor
 		# ANSI-sequences are stripped from the string.
 		# @see: color
 		def uncolor!(string = nil)
-			if block_given?
-				yield.to_str.gsub(COLORED_REGEXP, '')
+			arg=if block_given?
+				yield.to_s
 			elsif string.respond_to?(:to_str)
-				string.to_str.gsub(COLORED_REGEXP, '')
+				string.to_str
 			elsif respond_to?(:to_str)
-				arg=self
+				arg=self.to_str
 			else
 				''
 			end
+			Colorer.uncolorer(arg)
 		end
 
 		# wrap self or the first argument with colors
@@ -77,14 +78,14 @@ module SimpleColor
 		#		SimpleColor.color(:blue,:bold) { "blue" }
 		#		SimpleColor.color(:blue,:bold) << "blue" << SimpleColor.color(:clear)
 		def color!(*args)
-			if block_given?
-				arg = yield
+			arg=if block_given?
+				yield.to_s
 			elsif respond_to?(:to_str)
-				arg=self
+				self.to_str
 			elsif args.first.respond_to?(:to_str)
-				arg=args.shift
+				args.shift.to_str
 			else
-				arg=nil
+				nil
 			end
 			Colorer.colorer(arg,*args)
 		end

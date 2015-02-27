@@ -30,7 +30,7 @@ module SimpleColor
 
 		def colorer(s,*attributes,**kwds)
 			if s.nil?
-				color_attributes(*attributes)
+				color_attributes(*attributes,**kwds)
 			elsif s.empty?
 				s
 			else

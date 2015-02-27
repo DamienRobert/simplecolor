@@ -28,16 +28,24 @@ module SimpleColor
 			end
 		end
 
-		def colorer(s,*attributes)
+		def colorer(s,*attributes,**kwds)
 			if s.nil?
 				color_attributes(*attributes)
 			elsif s.empty?
 				s
 			else
 				matched = s.match(COLOR_REGEXP)
-				s.insert(matched.end(0), color_attributes(*attributes))
-				s.concat(color_attributes(:clear)) unless s =~ CLEAR_REGEXP
+				s.insert(matched.end(0), color_attributes(*attributes,**kwds))
+				s.concat(color_attributes(:clear,**kwds)) unless s =~ CLEAR_REGEXP
 			end
+		end
+
+		def uncolorer(s)
+			s.to_str.gsub(COLORED_REGEXP, '')
+		end
+
+		def colored?(s)
+			s =~ COLOR_REGEXP
 		end
 	end
 
@@ -53,7 +61,7 @@ module SimpleColor
 			elsif string.respond_to?(:to_str)
 				string.to_str.gsub(COLORED_REGEXP, '')
 			elsif respond_to?(:to_str)
-				to_str.gsub(COLORED_REGEXP, '')
+				arg=self
 			else
 				''
 			end
@@ -65,10 +73,10 @@ module SimpleColor
 		#		SimpleColor.color(:blue,:bold) { "blue" }
 		#		SimpleColor.color(:blue,:bold) << "blue" << SimpleColor.color(:clear)
 		def color(*args)
-			if respond_to?(:to_str)
-				arg=self.dup
-			elsif block_given?
+			if block_given?
 				arg = yield
+			elsif respond_to?(:to_str)
+				arg=self.dup
 			elsif args.first.respond_to?(:to_str)
 				arg=args.shift
 			else
@@ -76,7 +84,31 @@ module SimpleColor
 			end
 			Colorer.colorer(arg,*args)
 		end
+
+		#[:color,:uncolor].each do |m|
+		#	define_method :"#{m}!" do |*args,&b|
+		#		if respond_to?(:to_str)
+		#			self=color(*args)
+		#		else
+		#			color(*args)
+		#		end
+		#	end
+		#end
+
+		def color?
+			if respond_to?(:to_str)
+				arg=self
+			elsif block_given?
+				arg = yield
+			elsif args.first.respond_to?(:to_str)
+				arg=args.shift
+			else
+				arg=nil
+			end
+			Colorer.colored?(arg)
+		end
 	end
+
 	include ColorWrapper
 	extend self
 

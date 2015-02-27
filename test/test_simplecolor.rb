@@ -49,9 +49,9 @@ describe SimpleColor do
 			SimpleColor.color(word,:red).must_equal word
 		end
 
-		it "When disabled uncolor should be a noop" do
+		it "When disabled uncolor should still work" do
 			word="\e[31mred\e[0m"
-			SimpleColor.uncolor(word).must_equal word
+			SimpleColor.uncolor(word).must_equal "red"
 		end
 	end
 

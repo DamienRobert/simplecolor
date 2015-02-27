@@ -21,10 +21,13 @@ module SimpleColor
 		extend self
 		def color_attributes(*args, mode: :text)
 			result=args.map {|col| "\e[#{COLORS[col]}m" }.inject(:+)
-			if mode == :shell
-				return "%{"+result+"%}"
+			case mode
+			when :shell
+				"%{"+result+"%}"
+			when :disabled
+				""
 			else
-				return result
+				result
 			end
 		end
 
@@ -49,13 +52,14 @@ module SimpleColor
 		end
 	end
 
+	# Wraps around Colorer to provide useful instance methods
 	module ColorWrapper
 		extend self
 
 		# Returns an uncolored version of the string, that is all
 		# ANSI-sequences are stripped from the string.
 		# @see: color
-		def uncolor(string = nil)
+		def uncolor!(string = nil)
 			if block_given?
 				yield.to_str.gsub(COLORED_REGEXP, '')
 			elsif string.respond_to?(:to_str)
@@ -72,11 +76,11 @@ module SimpleColor
 		#		SimpleColor.color("blue", :blue, :bold)
 		#		SimpleColor.color(:blue,:bold) { "blue" }
 		#		SimpleColor.color(:blue,:bold) << "blue" << SimpleColor.color(:clear)
-		def color(*args)
+		def color!(*args)
 			if block_given?
 				arg = yield
 			elsif respond_to?(:to_str)
-				arg=self.dup
+				arg=self
 			elsif args.first.respond_to?(:to_str)
 				arg=args.shift
 			else
@@ -85,15 +89,11 @@ module SimpleColor
 			Colorer.colorer(arg,*args)
 		end
 
-		#[:color,:uncolor].each do |m|
-		#	define_method :"#{m}!" do |*args,&b|
-		#		if respond_to?(:to_str)
-		#			self=color(*args)
-		#		else
-		#			color(*args)
-		#		end
-		#	end
-		#end
+		[:color,:uncolor].each do |m|
+			define_method m do |*args,&b|
+				self.dup.send :"#{m}!",*args,&b
+			end
+		end
 
 		def color?
 			if respond_to?(:to_str)
@@ -119,11 +119,10 @@ module SimpleColor
 	attr_accessor :enabled
 	self.enabled=true
 
-	def color(*args)
-		super(*args, mode: SimpleColor.enabled) if SimpleColor.enabled
-	end
-	def uncolor(*args)
-		super if SimpleColor.enabled
+	[:color,:color!].each do |m|
+		define_method m do |*args, mode: (SimpleColor.enabled || :disabled)|
+			super(*args, mode: mode)
+		end
 	end
 
 	module Helpers

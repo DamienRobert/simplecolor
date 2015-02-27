@@ -120,8 +120,8 @@ module SimpleColor
 	self.enabled=true
 
 	[:color,:color!].each do |m|
-		define_method m do |*args, mode: (SimpleColor.enabled || :disabled)|
-			super(*args, mode: mode)
+		define_method m do |*args, mode: (SimpleColor.enabled || :disabled), &b|
+			super(*args, mode: mode, &b)
 		end
 	end
 

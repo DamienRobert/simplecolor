@@ -16,13 +16,20 @@ describe SimpleColor do
 		SimpleColor.enabled=true
 	end
 
-	it "Can be mixed in strings" do
-		SimpleColor.mix_in_string
-		"red".color(:red).must_equal "\e[31mred\e[0m"
-	end
-
 	it "Can be used directly" do
 		SimpleColor.color("red",:red).must_equal "\e[31mred\e[0m"
+	end
+
+	it "Can specify several colors" do
+		SimpleColor.color("red",:red,:bold).must_equal "\e[31m\e[1mred\e[0m"
+	end
+
+	it "Can take a block" do
+		SimpleColor.color(:red) { "red" }.must_equal "\e[31mred\e[0m"
+	end
+
+	it "Can provide only color values" do
+		SimpleColor.color(:red).must_equal "\e[31m"
 	end
 
 	it "can uncolor" do
@@ -38,6 +45,29 @@ describe SimpleColor do
 			SimpleColor.color("red",:red).must_equal "%{\e[31m%}red%{\e[0m%}"
 		end
 	end
+
+	describe "It can be mixed in strings" do
+		before do
+			SimpleColor.mix_in_string
+		end
+
+		it "Works on strings" do
+			"red".color(:red).must_equal "\e[31mred\e[0m"
+		end
+
+		it "color does not affects the string" do
+			s="red"
+			s.color(:red)
+			s.must_equal "red"
+		end
+
+		it "color! does affects the string" do
+			s="red"
+			s.color!(:red)
+			s.must_equal "\e[31mred\e[0m"
+		end
+	end
+
 
 	describe "It can be disabled" do
 		before do

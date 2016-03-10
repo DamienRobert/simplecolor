@@ -104,4 +104,10 @@ describe SimpleColor do
 		end
 	end
 
+	describe "It can copy colors" do
+		it "Copy one color" do
+			SimpleColor.copy_colors(SimpleColor.color("red",:red),"blue").must_equal "\e[31mblue\e[0m"
+		end
+	end
+
 end

@@ -145,8 +145,16 @@ module SimpleColor
 			mix_in(String)
 		end
 
-		def current_color(s)
-				matched = s.match(COLOR_REGEXP)
+		def attributes_from_colors(s)
+		end
+		#get the ansi sequences on s (assume the whole line is colored)
+		def current_colors(s)
+			[s.match(/^#{COLOR_REGEXP}/).to_s, s.match(/#{COLOR_REGEXP}$/).to_s]
+		end
+		#copy the colors from s to t
+		def copy_colors(s,t)
+			b,e=current_colors(s)
+			b+t+e
 		end
 	end
 	extend Helpers

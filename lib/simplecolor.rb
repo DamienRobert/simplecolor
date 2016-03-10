@@ -20,7 +20,14 @@ module SimpleColor
 	module Colorer
 		extend self
 		def color_attributes(*args, mode: :text)
-			result=args.map {|col| "\e[#{COLORS[col]}m" }.inject(:+)
+			result=args.map do |col|
+				case col
+				when Symbol
+					"\e[#{COLORS[col]}m"
+				else
+					col #assume this is already an ANSI escape sequence
+				end
+			end.inject(:+)
 			case mode
 			when :shell
 				"%{"+result+"%}"
@@ -65,7 +72,7 @@ module SimpleColor
 			elsif string.respond_to?(:to_str)
 				string.to_str
 			elsif respond_to?(:to_str)
-				arg=self.to_str
+				self.to_str
 			else
 				''
 			end
@@ -97,14 +104,14 @@ module SimpleColor
 		end
 
 		def color?
-			if respond_to?(:to_str)
-				arg=self
-			elsif block_given?
-				arg = yield
+			arg=if block_given?
+				yield.to_s
+			elsif respond_to?(:to_str)
+				self.to_str
 			elsif args.first.respond_to?(:to_str)
-				arg=args.shift
+				args.shift.to_str
 			else
-				arg=nil
+				nil
 			end
 			Colorer.colored?(arg)
 		end
@@ -132,6 +139,10 @@ module SimpleColor
 		end
 		def mix_in_string
 			mix_in(String)
+		end
+
+		def current_color(s)
+				matched = s.match(COLOR_REGEXP)
 		end
 	end
 	extend Helpers

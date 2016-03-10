@@ -25,13 +25,14 @@ module SimpleColor
 				case col
 				when Symbol
 					raise WrongColor(col) unless COLORS.key?(col)
-					"\e[#{COLORS[col]}m"
+					COLORS[col]
 				when COLOR_REGEXP
 					col
 				else
 					raise WrongColor(col)
 				end
-			end.inject(:+)
+			end.join(";")
+			result &&= "\e["+result+"m"
 			case mode
 			when :shell
 				"%{"+result+"%}"

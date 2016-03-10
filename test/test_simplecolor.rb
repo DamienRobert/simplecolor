@@ -21,7 +21,7 @@ describe SimpleColor do
 	end
 
 	it "Can specify several colors" do
-		SimpleColor.color("red",:red,:bold).must_equal "\e[31m\e[1mred\e[0m"
+		SimpleColor.color("red",:red,:bold).must_equal "\e[31;1mred\e[0m"
 	end
 
 	it "Can take a block" do
@@ -107,6 +107,10 @@ describe SimpleColor do
 	describe "It can copy colors" do
 		it "Copy one color" do
 			SimpleColor.copy_colors(SimpleColor.color("red",:red),"blue").must_equal "\e[31mblue\e[0m"
+		end
+
+		it "Copy several colors" do
+			SimpleColor.copy_colors(SimpleColor.color("red",:red,:bold),"blue").must_equal "\e[31;1mblue\e[0m"
 		end
 	end
 

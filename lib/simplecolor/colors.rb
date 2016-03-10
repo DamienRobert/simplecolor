@@ -2,16 +2,15 @@ module SimpleColor
 
   # Regular expression to scan if there is a clear ANSI effect at end of string
   CLEAR_REGEXP = /\e\[0m$/
+  # Regular expression that is used to scan for ANSI-sequences
+  COLORED_REGEXP = /(?:\e\[(?:[\d;]+)m)*/
   # Regular expression to find the end of the current ANSI sequence at
   # beginning of string, to wrap around in the correct order.
-  COLOR_REGEXP = /^(\e\[([\d;]+)m)*/
-  # Regular expression that is used to scan for ANSI-sequences while
-  # uncoloring strings.
-  COLORED_REGEXP = /\e\[(?:(?:[349]|10)[0-7]|[0-9])?m/
-  
+  COLOR_REGEXP = /^#{COLORED_REGEXP}/
+
   #Stolen from the paint gem.
   #See alosa http://en.wikipedia.org/wiki/ANSI_escape_code
-  
+
   # Basic colors (often, the color differs when using the bright effect)
   # Final color will be 30 + value for foreground and 40 + value for background
   # 90+value for intense foreground, 100+value for intense background

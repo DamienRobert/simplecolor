@@ -19,13 +19,16 @@ module SimpleColor
 	# The Colorer module handle all color outputs
 	module Colorer
 		extend self
+		WrongColor=Class.new(StandardError)
 		def color_attributes(*args, mode: :text)
 			result=args.map do |col|
 				case col
 				when Symbol
 					"\e[#{COLORS[col]}m"
+				when COLOR_REGEXP
+					col
 				else
-					col #assume this is already an ANSI escape sequence
+					raise WrongColor(col)
 				end
 			end.inject(:+)
 			case mode
@@ -44,14 +47,14 @@ module SimpleColor
 			elsif s.empty?
 				s
 			else
-				matched = s.match(COLOR_REGEXP)
+				matched = s.match(/^#{COLOR_REGEXP}/)
 				s.insert(matched.end(0), color_attributes(*attributes,**kwds))
 				s.concat(color_attributes(:clear,**kwds)) unless s =~ CLEAR_REGEXP
 			end
 		end
 
 		def uncolorer(s)
-			s.to_str.gsub!(COLORED_REGEXP, '')
+			s.to_str.gsub!(COLOR_REGEXP, '')
 		end
 
 		def colored?(s)

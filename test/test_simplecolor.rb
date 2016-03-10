@@ -70,6 +70,21 @@ describe SimpleColor do
 			s.color!(:red)
 			s.must_equal "\e[31mred\e[0m"
 		end
+
+		it "uncolor does not affects the string" do
+			s="\e[31mred\e[0m"
+"red"
+			s.uncolor
+			s.must_equal "\e[31mred\e[0m"
+		end
+
+		it "uncolor! does not affects the string" do
+			s="\e[31mred\e[0m"
+"red"
+			s.uncolor!
+			s.must_equal "red"
+		end
+
 	end
 
 

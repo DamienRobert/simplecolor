@@ -24,6 +24,7 @@ module SimpleColor
 			result=args.map do |col|
 				case col
 				when Symbol
+					raise WrongColor(col) unless COLORS.key?(col)
 					"\e[#{COLORS[col]}m"
 				when COLOR_REGEXP
 					col

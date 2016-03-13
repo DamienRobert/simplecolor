@@ -147,10 +147,12 @@ module SimpleColor
 		end
 
 		def attributes_from_colors(s)
+			[*s].map {|c| COLORS.index(s)}
 		end
 		#get the ansi sequences on s (assume the whole line is colored)
 		def current_colors(s)
-			[s.match(/^#{COLOR_REGEXP}/).to_s, s.match(/#{COLOR_REGEXP}$/).to_s]
+			m=s.match(/^(#{COLOR_REGEXP})(.*?)(#{COLOR_REGEXP})$/)
+			[m[1],m[3],m[2]]
 		end
 		#copy the colors from s to t
 		def copy_colors(s,t)

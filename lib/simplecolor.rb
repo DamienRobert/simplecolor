@@ -24,12 +24,12 @@ module SimpleColor
 			result=args.map do |col|
 				case col
 				when Symbol
-					raise WrongColor(col) unless COLORS.key?(col)
+					raise WrongColor.new(col) unless COLORS.key?(col)
 					COLORS[col]
 				when COLOR_REGEXP
 					col
 				else
-					raise WrongColor(col)
+					raise WrongColor.new(col)
 				end
 			end.join(";")
 			result &&= "\e["+result+"m"

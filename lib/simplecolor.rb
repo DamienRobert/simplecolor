@@ -53,9 +53,11 @@ module SimpleColor
 			elsif s.empty?
 				s
 			else
-				matched = s.match(/^#{COLOR_REGEXP}/)
-				s.insert(matched.end(0), color_attributes(*attributes,**kwds))
-				s.concat(color_attributes(:clear,**kwds)) unless s =~ CLEAR_REGEXP
+				matched = s.match(COLORMATCH_REGEXP)
+				attributes=color_attributes(*attributes,**kwds)
+				s.insert(matched.end(0), attributes)
+				s.concat(color_attributes(:clear,**kwds)) unless s =~ /#{CLEAR_REGEXP}$/ or attributes.empty?
+				s
 			end
 		end
 
@@ -155,7 +157,7 @@ module SimpleColor
 		end
 		#get the ansi sequences on s (assume the whole line is colored)
 		def current_colors(s)
-			m=s.match(/^(#{COLOR_REGEXP})(.*?)(#{COLOR_REGEXP})$/)
+			m=s.match(/^(#{COLORMATCH_REGEXP})(.*?)(#{COLORMATCH_REGEXP})$/)
 			[m[1],m[3],m[2]]
 		end
 		#copy the colors from s to t

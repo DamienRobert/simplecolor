@@ -24,7 +24,7 @@ module SimpleColor
 			accu=[]
 			buffer=""
 			flush=lambda {r=accu.join(";"); accu=[]; r.empty? || r="\e["+r+"m"; buffer<<r}
-			result=args.each do |col|
+			args.each do |col|
 				case col
 				when Symbol
 					raise WrongColor.new(col) unless COLORS.key?(col)
@@ -153,6 +153,9 @@ module SimpleColor
 		end
 
 		def attributes_from_colors(s)
+			s.scan(/#{ANSICOLOR_REGEXP}/).each do |a|
+				a[/\e\[(.*)m/,1]
+			end
 			[*s].map {|c| COLORS.key(s)}
 		end
 		#get the ansi sequences on s (assume the whole line is colored)

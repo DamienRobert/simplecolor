@@ -91,14 +91,12 @@ describe SimpleColor do
 
 		it "uncolor does not affects the string" do
 			s="\e[31mred\e[0m"
-"red"
 			s.uncolor
 			s.must_equal "\e[31mred\e[0m"
 		end
 
 		it "uncolor! does not affects the string" do
 			s="\e[31mred\e[0m"
-"red"
 			s.uncolor!
 			s.must_equal "red"
 		end
@@ -139,7 +137,7 @@ describe SimpleColor do
 		end
 
 		it "Can get colors attributes" do
-			b,e,l=SimpleColor.current_colors(SimpleColor.color("red",:red,:bold))
+			b,e=SimpleColor.current_colors(SimpleColor.color("red",:red,:bold))
 			SimpleColor.attributes_from_colors("\e[m"+b+e).must_equal([:clear,:red,:bold,:clear])
 		end
 

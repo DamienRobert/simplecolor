@@ -108,7 +108,7 @@ module SimpleColor
 			end
 		end
 
-		def color?
+		def color?(*args)
 			arg=if block_given?
 				yield.to_s
 			elsif respond_to?(:to_str)
@@ -147,7 +147,7 @@ module SimpleColor
 		end
 
 		def attributes_from_colors(s)
-			[*s].map {|c| COLORS.index(s)}
+			[*s].map {|c| COLORS.key(s)}
 		end
 		#get the ansi sequences on s (assume the whole line is colored)
 		def current_colors(s)
@@ -158,6 +158,10 @@ module SimpleColor
 		def copy_colors(s,t)
 			b,e=current_colors(s)
 			b+t+e
+		end
+		#split the line into characters and ANSII color sequences
+		def color_entities(l)
+			l.split(/(#{COLOR_REGEXP})/).flat_map {|c| color?(c) ? [c] : c.split('') }
 		end
 	end
 	extend Helpers

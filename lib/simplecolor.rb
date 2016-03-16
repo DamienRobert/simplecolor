@@ -153,10 +153,10 @@ module SimpleColor
 		end
 
 		def attributes_from_colors(s)
-			s.scan(/#{ANSICOLOR_REGEXP}/).each do |a|
-				a[/\e\[(.*)m/,1]
+			s.scan(/#{ANSICOLOR_REGEXP}/).flat_map do |a|
+				next :reset if a=="\e[m"
+				a[/\e\[(.*)m/,1].split(';').map {|c| COLORS.key(c.to_i)}
 			end
-			[*s].map {|c| COLORS.key(s)}
 		end
 		#get the ansi sequences on s (assume the whole line is colored)
 		def current_colors(s)

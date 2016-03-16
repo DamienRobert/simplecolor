@@ -138,7 +138,7 @@ describe SimpleColor do
 
 		it "Can get colors attributes" do
 			b,e=SimpleColor.current_colors(SimpleColor.color("red",:red,:bold))
-			SimpleColor.attributes_from_colors("\e[m"+b+e).must_equal([:clear,:red,:bold,:clear])
+			SimpleColor.attributes_from_colors("\e[m"+b+e).must_equal([:reset,:red,:bright,:reset])
 		end
 
 		it "Can split a string into color entities" do

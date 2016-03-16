@@ -23,7 +23,7 @@ module SimpleColor
 		def color_attributes(*args, mode: :text)
 			accu=[]
 			buffer=""
-			flush=lambda {r=accu.join(";");r.empty? || r="\e["+r+"m"; buffer<<r}
+			flush=lambda {r=accu.join(";"); accu=[]; r.empty? || r="\e["+r+"m"; buffer<<r}
 			result=args.each do |col|
 				case col
 				when Symbol
@@ -64,7 +64,7 @@ module SimpleColor
 		end
 
 		def colored?(s)
-			!! s =~ COLOR_REGEXP
+			!! (s =~ COLOR_REGEXP)
 		end
 	end
 

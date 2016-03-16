@@ -14,3 +14,4 @@ homepage: https://github.com/DamienRobert/simplecolor
 development_dependencies:
   rubygems-tasks: ~> 0.2
   yard: ~> 0.8
+  pry: ~> 0.1

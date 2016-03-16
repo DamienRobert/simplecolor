@@ -21,25 +21,29 @@ module SimpleColor
 		extend self
 		WrongColor=Class.new(StandardError)
 		def color_attributes(*args, mode: :text)
-			result=args.map do |col|
+			accu=[]
+			buffer=""
+			flush=lambda {r=accu.join(";");r.empty? || r="\e["+r+"m"; buffer<<r}
+			result=args.each do |col|
 				case col
 				when Symbol
 					raise WrongColor.new(col) unless COLORS.key?(col)
-					COLORS[col]
+					accu<<COLORS[col]
 				when COLOR_REGEXP
-					col
+					flush.call
+					buffer<<col
 				else
 					raise WrongColor.new(col)
 				end
-			end.join(";")
-			result &&= "\e["+result+"m"
+			end
+			flush.call
 			case mode
 			when :shell
-				"%{"+result+"%}"
+				"%{"+buffer+"%}"
 			when :disabled
 				""
 			else
-				result
+				buffer
 			end
 		end
 
@@ -60,7 +64,7 @@ module SimpleColor
 		end
 
 		def colored?(s)
-			s =~ COLOR_REGEXP
+			!! s =~ COLOR_REGEXP
 		end
 	end
 

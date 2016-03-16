@@ -29,7 +29,7 @@ describe SimpleColor do
 	end
 
 	it "Can mix ANSI sequences and attributes" do
-		SimpleColor.color("red",:inverse,"\e[31m",:bold).must_equal "\e[31;1mred\e[0m"
+		SimpleColor.color("red",:inverse,"\e[31m",:blue,:bold).must_equal "\e[7m\e[31m\e[34;1mred\e[0m"
 	end
 
 	it "Can take a block" do

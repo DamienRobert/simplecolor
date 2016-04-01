@@ -62,7 +62,7 @@ module SimpleColor
 		end
 
 		def uncolorer(s)
-			s.to_str.gsub!(COLOR_REGEXP, '')
+			s.to_str.gsub!(COLOR_REGEXP, '') || s.to_str
 		end
 
 		def colored?(s)

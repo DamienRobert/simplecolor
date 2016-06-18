@@ -63,6 +63,8 @@ module SimpleColor
 
 		def uncolorer(s)
 			s.to_str.gsub!(COLOR_REGEXP, '') || s.to_str
+		rescue ArgumentError #rescue from "invalid byte sequence in UTF-8"
+			s.to_str
 		end
 
 		def colored?(s)
@@ -162,6 +164,8 @@ module SimpleColor
 		def current_colors(s)
 			m=s.match(/^(#{COLORMATCH_REGEXP})(.*?)(#{COLORMATCH_REGEXP})$/)
 			[m[1],m[3],m[2]]
+		rescue ArgumentError #rescue from "invalid byte sequence in UTF-8"
+			["","",s]
 		end
 		#copy the colors from s to t
 		def copy_colors(s,t)

@@ -1,9 +1,11 @@
 # simplecolor
 
 * [Homepage](https://github.com/DamienRobert/simplecolor)
-* [Gem](https://rubygems.org/gems/simplecolor)
-* [Documentation](http://rubydoc.info/gems/simplecolor/frames)
+* [Documentation](http://rubydoc.info/gems/simplecolor)
 * [Email](mailto:Damien.Olivier.Robert+gems@gmail.com)
+
+[![Gem Version](https://img.shields.io/gem/v/simplecolor.svg)](https://rubygems.org/gems/simplecolor)
+[![Build Status](https://travis-ci.org/DamienRobert/simplecolor.svg?branch=master)](https://travis-ci.org/DamienRobert/simplecolor)
 
 ## Description
 
@@ -73,16 +75,15 @@ None.
 $ gem install simplecolor
 ~~~
 
-This install `v0.1.0`, the current `master` version may not work.
+This installs `v0.1.0`, the current `master` version may not work.
 
 ## Todo
 
 - Support 256 colors
 - Tests
 
-
 ## Copyright
 
 Copyright © 2013–2016 Damien Robert
 
-MIT License. See {file:LICENSE.txt} for details.
+MIT License. See [LICENSE.txt](./LICENSE.txt) for details.

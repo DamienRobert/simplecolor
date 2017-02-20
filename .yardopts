@@ -1,1 +1,6 @@
---markup markdown -M kramdown --title "simplecolor Documentation" --protected
+--markup markdown
+--title "simplecolor Documentation"
+--protected
+-
+ChangeLog.md
+LICENSE.txt

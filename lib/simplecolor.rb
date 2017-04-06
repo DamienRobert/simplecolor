@@ -4,14 +4,14 @@ require 'simplecolor/colors'
 #Usage:
 #
 #@example
-#  class Foo
-#		 include SimpleColor::Mixin
-#		 def to_str
-#			 ...
-#		 end
-#  end
-#  foo=Foo.new()
-#  foo.color(:red)
+# class Foo
+# 	include SimpleColor
+# 	def to_str
+# 		...
+# 	end
+# end
+# foo=Foo.new()
+# foo.color(:red)
 
 #after SimpleColor.mix_in_string, one can do
 #`"blue".color(:blue,:bold)`

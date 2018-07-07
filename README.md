@@ -84,6 +84,6 @@ This installs `v0.1.0`, the current `master` version may not work.
 
 ## Copyright
 
-Copyright © 2013–2016 Damien Robert
+Copyright © 2013–2017 Damien Robert
 
 MIT License. See [LICENSE.txt](./LICENSE.txt) for details.

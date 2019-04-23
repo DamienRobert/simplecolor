@@ -20,10 +20,12 @@ module SimpleColor
 	module Colorer
 		extend self
 		WrongColor=Class.new(StandardError)
+		# For RGB, Foreground = "\e[38;5;#{fg}m", Background = "\e[48;5;#{bg}m"
+
 		def color_attributes(*args, mode: :text)
 			accu=[]
 			buffer=""
-			flush=lambda {r=accu.join(";"); accu=[]; r.empty? || r="\e["+r+"m"; buffer<<r}
+			flush=lambda {r=accu.join(";"); accu=[]; r.empty? || r="\e["+r+"m"; buffer<<r} #Note: "\e"="\x1b"
 			args.each do |col|
 				case col
 				when Symbol
@@ -47,28 +49,64 @@ module SimpleColor
 			end
 		end
 
+		def regexp(type=:color, mode: :text)
+			case type
+			when :color
+				if mode == :shell
+					m=regexp(:ansi, mode: mode)
+					/#{m}+/
+				else
+					COLOR_REGEXP
+				end
+			when :match
+				if mode == :shell
+					m=regexp(:ansi, mode: mode)
+					/#{m}*/
+				else
+					COLORMATCH_REGEXP
+				end
+			when :ansi
+				if mode == :shell
+					/%{#{ANSICOLOR_REGEXP}%}/
+				else
+					ANSICOLOR_REGEXP
+				end
+			when :clear
+				if mode == :shell
+					/%{#{CLEAR_REGEXP}%}/
+				else
+					CLEAR_REGEXP
+				end
+			end
+		end
+
 		def colorer(s,*attributes,**kwds)
 			if s.nil?
 				color_attributes(*attributes,**kwds)
 			elsif s.empty?
 				s
 			else
-				matched = s.match(COLORMATCH_REGEXP)
+				# we need to insert the ANSI sequences after existing ones so that
+				# the new colors have precedence
+				matched = s.match(regexp(:match, **kwds))
 				attributes=color_attributes(*attributes,**kwds)
 				s.insert(matched.end(0), attributes)
-				s.concat(color_attributes(:clear,**kwds)) unless s =~ /#{CLEAR_REGEXP}$/ or attributes.empty?
+				s.concat(color_attributes(:clear,**kwds)) unless s =~ /#{regexp(:clear, **kwds)}$/ or attributes.empty?
 				s
 			end
 		end
 
-		def uncolorer(s)
-			s.to_str.gsub!(COLOR_REGEXP, '') || s.to_str
+		# Returns an uncolored version of the string, that is all
+		# ANSI-sequences are stripped from the string.
+		# @see: colorer
+		def uncolorer(s, **kwds)
+			s.to_str.gsub!(regexp(:color, **kwds), '') || s.to_str
 		rescue ArgumentError #rescue from "invalid byte sequence in UTF-8"
 			s.to_str
 		end
 
-		def colored?(s)
-			!! (s =~ COLOR_REGEXP)
+		def colored?(s, **kwds)
+			!! (s =~ regexp(:color, **kwds))
 		end
 	end
 
@@ -76,9 +114,6 @@ module SimpleColor
 	module ColorWrapper
 		extend self
 
-		# Returns an uncolored version of the string, that is all
-		# ANSI-sequences are stripped from the string.
-		# @see: color
 		def uncolor!(string = nil)
 			arg=if block_given?
 				yield.to_s
@@ -97,17 +132,26 @@ module SimpleColor
 		#		SimpleColor.color("blue", :blue, :bold)
 		#		SimpleColor.color(:blue,:bold) { "blue" }
 		#		SimpleColor.color(:blue,:bold) << "blue" << SimpleColor.color(:clear)
-		def color!(*args)
-			arg=if block_given?
-				yield.to_s
-			elsif respond_to?(:to_str)
-				self.to_str
-			elsif args.first.respond_to?(:to_str)
-				args.shift.to_str
-			else
-				nil
+		%i(color! uncolor! color?).each do |m|
+			define_method m do |*args, &b|
+				arg=if b
+					b.call.to_s
+				elsif respond_to?(:to_str)
+					self.to_str
+				elsif args.first.respond_to?(:to_str)
+					args.shift.to_str
+				else
+					nil
+				end
+				case m
+				when :color!
+					Colorer.colorer(arg,*args)
+				when :uncolor!
+					Colorer.uncolorer(arg,*args)
+				when :color?
+					Colorer.colored?(arg,*args)
+				end
 			end
-			Colorer.colorer(arg,*args)
 		end
 
 		[:color,:uncolor].each do |m|
@@ -116,18 +160,6 @@ module SimpleColor
 			end
 		end
 
-		def color?(*args)
-			arg=if block_given?
-				yield.to_s
-			elsif respond_to?(:to_str)
-				self.to_str
-			elsif args.first.respond_to?(:to_str)
-				args.shift.to_str
-			else
-				nil
-			end
-			Colorer.colored?(arg)
-		end
 	end
 
 	include ColorWrapper
@@ -140,7 +172,7 @@ module SimpleColor
 	attr_accessor :enabled
 	self.enabled=true
 
-	[:color,:color!].each do |m|
+	[:color,:color!, :uncolor, :uncolor!, :color?].each do |m|
 		define_method m do |*args, mode: (SimpleColor.enabled || :disabled), &b|
 			super(*args, mode: mode, &b)
 		end

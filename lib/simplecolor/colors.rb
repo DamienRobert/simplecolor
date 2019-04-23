@@ -8,7 +8,7 @@ module SimpleColor
   COLORMATCH_REGEXP = /#{ANSICOLOR_REGEXP}*/
 
   #Stolen from the paint gem.
-  #See alosa http://en.wikipedia.org/wiki/ANSI_escape_code
+  #See also http://en.wikipedia.org/wiki/ANSI_escape_code
 
   # Basic colors (often, the color differs when using the bright effect)
   # Final color will be 30 + value for foreground and 40 + value for background

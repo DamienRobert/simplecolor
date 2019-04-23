@@ -195,4 +195,18 @@ describe SimpleColor do
 			SimpleColor2.color("red", :red).must_equal "red"
 		end
 	end
+
+	describe "It can use a different color module via inclusion" do
+		module SimpleColor3
+			extend SimpleColor.color_module
+		end
+
+		it "Can color too" do
+			SimpleColor3.color("red", :red).must_equal "\e[31mred\e[0m"
+		end
+
+		it "In this case can't changed :enabled" do
+			SimpleColor3.respond_to?(:enabled).must_equal false
+		end
+	end
 end

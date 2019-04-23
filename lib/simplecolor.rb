@@ -189,7 +189,9 @@ module SimpleColor
 			l.split(/(#{COLOR_REGEXP})/).flat_map {|c| color?(c) ? [c] : c.split('') }
 		end
 
-		def color_module(mod)
+		def color_module(mod=nil)
+			mod=Module.new if mod.nil?
+
 			class << mod
 				attr_accessor :enabled
 			end
@@ -210,9 +212,11 @@ module SimpleColor
 			end
 			mod.include(coloring)
 			mod.extend(coloring)
-			mod.extend(Helpers)
+			# mod.extend(Helpers)
+			mod
 		end
 	end
 
+	extend Helpers
 	Helpers.color_module(self)
 end

@@ -113,20 +113,6 @@ module SimpleColor
 	# Wraps around Colorer to provide useful instance methods
 	module ColorWrapper
 		extend self
-
-		def uncolor!(string = nil)
-			arg=if block_given?
-				yield.to_s
-			elsif string.respond_to?(:to_str)
-				string.to_str
-			elsif respond_to?(:to_str)
-				self.to_str
-			else
-				''
-			end
-			Colorer.uncolorer(arg)
-		end
-
 		# wrap self or the first argument with colors
 		# @example ploum
 		#		SimpleColor.color("blue", :blue, :bold)
@@ -169,7 +155,10 @@ module SimpleColor
 	# :shell means that the color escape sequence will be quoted.
 	# This is meant to be used in the shell prompt, so that the escape
 	# sequence will not count in the length of the prompt.
-	attr_accessor :enabled
+
+	class << self
+		attr_accessor :enabled
+	end
 	self.enabled=true
 
 	[:color,:color!, :uncolor, :uncolor!, :color?].each do |m|
@@ -186,13 +175,19 @@ module SimpleColor
 			mix_in(String)
 		end
 
+		# scan s from left to right and for each ansi sequences found
+		# split it into elementary components and output the symbolic meaning
+		# eg: SimpleColor.attributes_from_colors(SimpleColor.color("foo", :red))
+		#     => [:red, :reset]
 		def attributes_from_colors(s)
 			s.scan(/#{ANSICOLOR_REGEXP}/).flat_map do |a|
 				next :reset if a=="\e[m"
 				a[/\e\[(.*)m/,1].split(';').map {|c| COLORS.key(c.to_i)}
 			end
 		end
+
 		#get the ansi sequences on s (assume the whole line is colored)
+		#returns left_ansi, right_ansi, string
 		def current_colors(s)
 			m=s.match(/^(#{COLORMATCH_REGEXP})(.*?)(#{COLORMATCH_REGEXP})$/)
 			[m[1],m[3],m[2]]
@@ -204,6 +199,7 @@ module SimpleColor
 			b,e=current_colors(s)
 			b+t+e
 		end
+
 		#split the line into characters and ANSII color sequences
 		def color_entities(l)
 			l.split(/(#{COLOR_REGEXP})/).flat_map {|c| color?(c) ? [c] : c.split('') }

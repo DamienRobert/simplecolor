@@ -1,6 +1,7 @@
 module SimpleColor
 
   # Regular expression to scan if there is a clear ANSI effect
+  CLEAR = "\e\[0m"
   CLEAR_REGEXP = /\e\[0m/
   # Regular expression that is used to scan for ANSI-sequences
   ANSICOLOR_REGEXP = /\e\[(?:[\d;]*)m/

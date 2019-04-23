@@ -23,13 +23,14 @@ module SimpleColor
 		extend self
 		WrongColor=Class.new(StandardError)
 
-		# For RGB 256 colors, 
+		# For RGB 256 colors,
 		# Foreground = "\e[38;5;#{fg}m", Background = "\e[48;5;#{bg}m"
 		# where the color code is
 		# 0-  7:  standard colors (as in ESC [ 30–37 m)
 		# 8- 15:  high intensity colors (as in ESC [ 90–97 m)
 		# 16-231:  6 × 6 × 6 cube (216 colors): 16 + 36 × r + 6 × g + b (0 ≤ r, g, b ≤ 5)
 		#232-255:  grayscale from black to white in 24 steps
+
 		#For true colors:
 		#   ESC[ 38;2;<r>;<g>;<b> m Select RGB foreground color
 		#   ESC[ 48;2;<r>;<g>;<b> m Select RGB background color
@@ -44,9 +45,23 @@ module SimpleColor
 				when Symbol
 					raise WrongColor.new(col) unless COLORS.key?(col)
 					accu<<COLORS[col]
+				when Integer #direct color code
+					accu << col.to_s
+				when Array
+					accu << ""
 				when COLOR_REGEXP
 					flush.call
 					buffer<<col
+				when String
+					if (m=col.match(/(on_)?rgb[+:-]?(\d+)[+:-](\d+)[+:-](\d+)/))
+						on=m[1]
+						red=m[2]; green=m[3]; blue=m[4]
+						if on
+							accu << "48;2;#{red};#{green};#{blue}"
+						else
+							accu << "38;2;#{red};#{green};#{blue}"
+						end
+					end
 				else
 					raise WrongColor.new(col)
 				end
@@ -176,7 +191,7 @@ module SimpleColor
 		#     => [:red, :reset]
 		def attributes_from_colors(s)
 			s.scan(/#{ANSICOLOR_REGEXP}/).flat_map do |a|
-				next :reset if a=="\e[m"
+				next :reset if a=="\e[m" #alternative for reset
 				a[/\e\[(.*)m/,1].split(';').map {|c| COLORS.key(c.to_i)}
 			end
 		end

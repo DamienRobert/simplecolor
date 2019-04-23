@@ -167,6 +167,11 @@ describe SimpleColor do
 			SimpleColor.color_entities(SimpleColor.color("red",:red,:bold)+SimpleColor.color("blue",:blue)).must_equal(["\e[31;1m", "r", "e", "d", "\e[0m\e[34m", "b", "l", "u", "e", "\e[0m"])
 			SimpleColor.color_entities("blue "+SimpleColor.color("red",:red,:bold)+" green").must_equal(["b", "l", "u", "e", " ", "\e[31;1m", "r", "e", "d", "\e[0m", " ", "g", "r", "e", "e", "n"])
 		end
+
+		it "Can split a string into color strings" do
+			SimpleColor.color_strings(SimpleColor.color("red",:red,:bold)+SimpleColor.color("blue",:blue)).must_equal(["\e[31;1m", "red", "\e[0m\e[34m", "blue", "\e[0m"])
+			SimpleColor.color_strings("blue "+SimpleColor.color("red",:red,:bold)+" green").must_equal(["blue ", "\e[31;1m", "red", "\e[0m", " green"])
+		end
 	end
 
 	describe "It can use a different color module" do

@@ -22,9 +22,20 @@ module SimpleColor
 	module Colorer
 		extend self
 		WrongColor=Class.new(StandardError)
-		# For RGB, Foreground = "\e[38;5;#{fg}m", Background = "\e[48;5;#{bg}m"
+
+		# For RGB 256 colors, 
+		# Foreground = "\e[38;5;#{fg}m", Background = "\e[48;5;#{bg}m"
+		# where the color code is
+		# 0-  7:  standard colors (as in ESC [ 30–37 m)
+		# 8- 15:  high intensity colors (as in ESC [ 90–97 m)
+		# 16-231:  6 × 6 × 6 cube (216 colors): 16 + 36 × r + 6 × g + b (0 ≤ r, g, b ≤ 5)
+		#232-255:  grayscale from black to white in 24 steps
+		#For true colors:
+		#   ESC[ 38;2;<r>;<g>;<b> m Select RGB foreground color
+		#   ESC[ 48;2;<r>;<g>;<b> m Select RGB background color
 
 		def color_attributes(*args, mode: :text)
+			return "" if mode==:disabled #early abort
 			accu=[]
 			buffer=""
 			flush=lambda {r=accu.join(";"); accu=[]; r.empty? || r="\e["+r+"m"; buffer<<r} #Note: "\e"="\x1b"
@@ -45,7 +56,7 @@ module SimpleColor
 			when :shell
 				"%{"+buffer+"%}"
 			when :disabled
-				""
+				"" # already handled above
 			else
 				buffer
 			end
@@ -187,6 +198,14 @@ module SimpleColor
 		#split the line into characters and ANSII color sequences
 		def color_entities(l)
 			l.split(/(#{COLOR_REGEXP})/).flat_map {|c| color?(c) ? [c] : c.split('') }
+		end
+		#same as above but split into strings
+		def color_strings(l)
+			u=l.split(/(#{COLOR_REGEXP})/)
+			# if we start with an ANSI sequence, u is ["", ...], so we need to
+			# get rid of that ""
+			u.shift if u.first == ""
+			u
 		end
 
 		def color_module(mod=nil)

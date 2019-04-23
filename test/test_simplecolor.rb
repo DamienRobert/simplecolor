@@ -87,6 +87,7 @@ describe SimpleColor do
 
 	describe "It can be mixed in strings" do
 		before do
+			SimpleColor.enabled=true
 			SimpleColor.mix_in_string
 		end
 
@@ -168,4 +169,30 @@ describe SimpleColor do
 		end
 	end
 
+	describe "It can use a different color module" do
+		module SimpleColor2
+		end
+		SimpleColor.color_module(SimpleColor2)
+
+		before do
+			SimpleColor2.enabled=true
+		end
+
+		it "Can color too" do
+			SimpleColor2.color("red", :red).must_equal "\e[31mred\e[0m"
+		end
+
+		it "Still works if SimpleColor is disabled" do
+			SimpleColor.enabled=false
+			SimpleColor2.color("red", :red).must_equal "\e[31mred\e[0m"
+			SimpleColor.color("red", :red).must_equal "red"
+		end
+
+		it "Can be disabled without disabling SimpleColor" do
+			SimpleColor.enabled=true
+			SimpleColor2.enabled=false
+			SimpleColor.color("red", :red).must_equal "\e[31mred\e[0m"
+			SimpleColor2.color("red", :red).must_equal "red"
+		end
+	end
 end

@@ -66,6 +66,23 @@ describe SimpleColor do
 		it "Wraps color into shell escapes" do
 			SimpleColor.color("red",:red).must_equal "%{\e[31m%}red%{\e[0m%}"
 		end
+
+		it "Can uncolor correctly" do
+			SimpleColor.uncolor(SimpleColor.color("red",:red)).must_equal "red"
+		end
+
+		it "Only uncolor shell wrapped colors" do
+			red="\e[31mred\e[0m"
+			SimpleColor.uncolor(red).must_equal red
+		end
+
+		it "Can detect colors correctly" do
+			SimpleColor.color?(SimpleColor.color("red",:red)).must_equal true
+		end
+
+		it "Only detect shell wrapped colors" do
+			SimpleColor.color?("\e[31mred\e[0m").must_equal false
+		end
 	end
 
 	describe "It can be mixed in strings" do

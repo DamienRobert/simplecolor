@@ -16,6 +16,8 @@ require 'simplecolor/colors'
 #after SimpleColor.mix_in_string, one can do
 #`"blue".color(:blue,:bold)`
 module SimpleColor
+	extend self
+
 	# The Colorer module handle all color outputs
 	module Colorer
 		extend self
@@ -145,29 +147,11 @@ module SimpleColor
 				self.dup.send :"#{m}!",*args,&b
 			end
 		end
-
-	end
-
-	include ColorWrapper
-	extend self
-
-	# enabled can be set to true, false, or :shell
-	# :shell means that the color escape sequence will be quoted.
-	# This is meant to be used in the shell prompt, so that the escape
-	# sequence will not count in the length of the prompt.
-
-	class << self
-		attr_accessor :enabled
-	end
-	self.enabled=true
-
-	[:color,:color!, :uncolor, :uncolor!, :color?].each do |m|
-		define_method m do |*args, mode: (SimpleColor.enabled || :disabled), &b|
-			super(*args, mode: mode, &b)
-		end
 	end
 
 	module Helpers
+		extend self
+
 		def mix_in(klass)
 			klass.send :include, SimpleColor
 		end
@@ -204,6 +188,31 @@ module SimpleColor
 		def color_entities(l)
 			l.split(/(#{COLOR_REGEXP})/).flat_map {|c| color?(c) ? [c] : c.split('') }
 		end
+
+		def color_module(mod)
+			class << mod
+				attr_accessor :enabled
+			end
+			mod.enabled=true
+
+			coloring=Module.new do
+				# enabled can be set to true, false, or :shell
+				# :shell means that the color escape sequence will be quoted.
+				# This is meant to be used in the shell prompt, so that the escape
+				# sequence will not count in the length of the prompt.
+				include ColorWrapper
+
+				[:color,:color!, :uncolor, :uncolor!, :color?].each do |m|
+					define_method m do |*args, mode: (mod.enabled || :disabled), &b|
+						super(*args, mode: mode, &b)
+					end
+				end
+			end
+			mod.include(coloring)
+			mod.extend(coloring)
+			mod.extend(Helpers)
+		end
 	end
-	extend Helpers
+
+	Helpers.color_module(self)
 end

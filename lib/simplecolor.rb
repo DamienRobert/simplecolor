@@ -1,5 +1,6 @@
 require 'simplecolor/version'
 require 'simplecolor/colors'
+require 'simplecolor/rgb'
 
 #Usage:
 #

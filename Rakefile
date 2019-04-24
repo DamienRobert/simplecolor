@@ -1,15 +1,5 @@
 require 'rake'
 
-begin
-  require 'rubygems/tasks'
-  Gem::Tasks.new(sign: {checksum: true, pgp: true},
-    scm: {status: true}) do |tasks|
-    tasks.console.command = 'pry'
-  end
-rescue LoadError => e
-  warn e.message
-end
-
 require 'rake/testtask'
 Rake::TestTask.new do |test|
   test.libs << 'test'
@@ -29,9 +19,7 @@ task :doc => :yard
 
 begin
   require 'dr/rake_gems'
-  Gem::MyTasks.new do |tasks|
-  	tasks.version.mapping={"simplecolor" => "SimpleColor"}
-  end
+  Gem::MyTasks.new
 rescue LoadError => e
   warn e.message
 end

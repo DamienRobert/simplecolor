@@ -68,4 +68,5 @@ Gem::Specification.new do |gem|
   end
 
   gem.metadata['yard.run']='yri'
+  gem.metadata['project_name']='SimpleColor'
 end

@@ -37,7 +37,7 @@ module SimpleColor
 		#		ESC[ 48;2;<r>;<g>;<b> m Select RGB background color
 
 		def color_attributes(*args, mode: :text, colormode: :truecolor)
-			return "" if mode==:disabled #early abort
+			return "" if mode==:disabled or mode==false #early abort
 			accu=[]
 			buffer=""
 			flush=lambda {r=accu.join(";"); accu=[]; r.empty? || r="\e["+r+"m"; buffer<<r} #Note: "\e"="\x1b"
@@ -95,7 +95,7 @@ module SimpleColor
 			end
 		end
 
-		def regexp(type=:color, mode: :text)
+		def regexp(type=:color, mode: :text, **_rest)
 			case type
 			when :color
 				if mode == :shell
@@ -245,9 +245,17 @@ module SimpleColor
 			mod=Module.new if mod.nil?
 
 			class << mod
-				attr_accessor :enabled
+				attr_accessor :opts
+				{enabled: :mode, color_mode: :colormode}.each do |i,k|
+					define_method(i) do
+						opts[k]
+					end
+					define_method("#{i}=".to_sym) do |v|
+						opts[k]=v
+					end
+				end
 			end
-			mod.enabled=true
+			mod.opts={mode: true, colormode: :truecolor}
 
 			coloring=Module.new do
 				# enabled can be set to true, false, or :shell
@@ -257,8 +265,9 @@ module SimpleColor
 				include ColorWrapper
 
 				[:color,:color!, :uncolor, :uncolor!, :color?].each do |m|
-					define_method m do |*args, mode: (mod.enabled || :disabled), &b|
-						super(*args, mode: mode, &b)
+					define_method m do |*args, **opts, &b|
+						opts=mod.opts.merge(opts)
+						super(*args, **opts, &b)
 					end
 				end
 			end

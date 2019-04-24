@@ -2,6 +2,16 @@
 # taken from the paint gem, all copyright belong to its author
 
 module SimpleColor
+	require "zlib"
+	rgb_colors = File.dirname(__FILE__) + "/../../data/rgb_colors.marshal.gz"
+	# A list of color names, based on X11's rgb.txt
+
+	File.open(rgb_colors, "rb") do |file|
+		serialized_data = Zlib::GzipReader.new(file).read
+		serialized_data.force_encoding Encoding::BINARY
+		RGB_COLORS = Marshal.load(serialized_data)
+	end
+
 	module RGBHelper
 		extend self
 
@@ -15,9 +25,22 @@ module SimpleColor
 				"#{background ? 4 : 3}#{rgb_to_ansi(red, green, blue, use_bright: true)}"
 			when 256
 				"#{background ? 48 : 38}#{rgb_to_256(red, green, blue)}"
-			when TRUE_COLOR, :truecolor
+
+			when TRUE_COLOR, :truecolor, true
 				"#{background ? 48 : 38}#{rgb_true(red, green, blue)}"
 			end
+		end
+
+		def rgb256(red, green, blue, background: false)
+			rgb=16 + 36 * red + 6 * green + blue
+			"#{background ? 48 : 38}#{rgb}"
+		end
+		def grey256(grey, background: false)
+			grey=232+grey
+			"#{background ? 48 : 38}#{grey}"
+		end
+		def direct256(code, background: false)
+			"#{background ? 48 : 38}#{code}"
 		end
 
 		# Returns 24-bit color value (see https://gist.github.com/XVilka/8346728)

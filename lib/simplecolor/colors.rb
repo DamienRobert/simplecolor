@@ -1,5 +1,8 @@
 module SimpleColor
 
+	# Number of possible colors in TRUE COLOR mode
+	TRUE_COLOR = 0xFFFFFF
+
 	# Regular expression to scan if there is a clear ANSI effect
 	CLEAR = "\e\[0m"
 	CLEAR_REGEXP = /\e\[0m/

@@ -6,10 +6,10 @@ require 'simplecolor/rgb'
 #
 #@example
 # class Foo
-# 	include SimpleColor
-# 	def to_str
-# 		...
-# 	end
+#		include SimpleColor
+#		def to_str
+#			...
+#		end
 # end
 # foo=Foo.new()
 # foo.color(:red)
@@ -27,16 +27,16 @@ module SimpleColor
 		# For RGB 256 colors,
 		# Foreground = "\e[38;5;#{fg}m", Background = "\e[48;5;#{bg}m"
 		# where the color code is
-		# 0-  7:  standard colors (as in ESC [ 30–37 m)
-		# 8- 15:  high intensity colors (as in ESC [ 90–97 m)
+		# 0-	7:	standard colors (as in ESC [ 30–37 m)
+		# 8- 15:	high intensity colors (as in ESC [ 90–97 m)
 		# 16-231:  6 × 6 × 6 cube (216 colors): 16 + 36 × r + 6 × g + b (0 ≤ r, g, b ≤ 5)
 		#232-255:  grayscale from black to white in 24 steps
 
 		#For true colors:
-		#   ESC[ 38;2;<r>;<g>;<b> m Select RGB foreground color
-		#   ESC[ 48;2;<r>;<g>;<b> m Select RGB background color
+		#		ESC[ 38;2;<r>;<g>;<b> m Select RGB foreground color
+		#		ESC[ 48;2;<r>;<g>;<b> m Select RGB background color
 
-		def color_attributes(*args, mode: :text)
+		def color_attributes(*args, mode: :text, colormode: :truecolor)
 			return "" if mode==:disabled #early abort
 			accu=[]
 			buffer=""
@@ -49,18 +49,35 @@ module SimpleColor
 				when Integer #direct color code
 					accu << col.to_s
 				when Array
-					accu << ""
+					if col.size == 3 && col.all?{ |n| n.is_a? Numeric }
+						accu << RGBHelper.rgb(*col, mode: colormode)
+					else
+						raise WrongColor.new(col)
+					end
 				when COLOR_REGEXP
 					flush.call
 					buffer<<col
 				when String
-					if (m=col.match(/(on_)?rgb[+:-]?(\d+)[+:-](\d+)[+:-](\d+)/))
-						on=m[1]
-						red=m[2]; green=m[3]; blue=m[4]
-						if on
-							accu << "48;2;#{red};#{green};#{blue}"
+					if (m=col.match(/(t:)?(on_)?rgb[+:-]?(\d+)[+:-](\d+)[+:-](\d+)/))
+						tcol=m[1]; on=m[2]
+						red=m[3]; green=m[4]; blue=m[5]
+						tcol ? lcolormode=:truecolor : lcolormode=colormode
+						accu << RGBHelper.rgb(red, green, blue, background: !!on, mode: lcolormode)
+					elsif (m=col.match(/(on_)?rgb256[+:-]?(gr[ae]y)(\d+)([+:-](\d+)[+:-](\d+))?/))
+						on=m[1]; grey=m[2]
+						red=m[3]; green=m[4]; blue=m[5]
+						if grey
+							accu << RGBHelper.grey256(red, background: !!on)
+						elsif green and blue
+							accu << RGBHelper.rgb256(red, green, blue, background: !!on)
 						else
-							accu << "38;2;#{red};#{green};#{blue}"
+							accu << RGBHelper.direct256(red, background: !!on)
+						end
+					else
+						if RGB_COLORS.key?(col)
+							accu << RGBHelper.rgb(*RGB_COLORS[col], mode: colormode)
+						else
+							raise WrongColor.new(col)
 						end
 					end
 				else
@@ -189,7 +206,7 @@ module SimpleColor
 		# scan s from left to right and for each ansi sequences found
 		# split it into elementary components and output the symbolic meaning
 		# eg: SimpleColor.attributes_from_colors(SimpleColor.color("foo", :red))
-		#     => [:red, :reset]
+		#			=> [:red, :reset]
 		def attributes_from_colors(s)
 			s.scan(/#{ANSICOLOR_REGEXP}/).flat_map do |a|
 				next :reset if a=="\e[m" #alternative for reset

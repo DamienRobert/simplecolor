@@ -29,7 +29,9 @@ task :doc => :yard
 
 begin
   require 'dr/rake_gems'
-  Gem::MyTasks.new
+  Gem::MyTasks.new do |tasks|
+  	tasks.version.mapping={"simplecolor" => "SimpleColor"}
+  end
 rescue LoadError => e
   warn e.message
 end

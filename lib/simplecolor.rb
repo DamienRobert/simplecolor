@@ -37,6 +37,22 @@ module SimpleColor
 		#		ESC[ 38;2;<r>;<g>;<b> m Select RGB foreground color
 		#		ESC[ 48;2;<r>;<g>;<b> m Select RGB background color
 
+		# A color can be:
+		# - a symbol (looked in at COLORS)
+		# - an integer (direct color code)
+		# - an array of rgb data (truecolor)
+		# - a color escape sequence
+		# - a String
+		#     rgb:10-20-30 (foreground truecolor)
+		#     on_rgb:10-20-30 (background truecolor)
+		#     t:rgb... (don't fallback to lower color mode)
+		#     (on_)rgb256:r:g:b  (force 256 color mode)
+		#     (on_)rgb256:grey3 (256 grey scale)
+		#     (on_)rgb256:5 (direct color code)
+		#     (t:)(on_)#AABBCC (hex code, truecolor)
+		#     (t:)(on_)#ABC (reduced hex code, truecolor)
+		#     (t:)(on_)name (X11 color name, truecolor)
+
 		def color_attributes(*args, mode: :text, colormode: :truecolor)
 			return "" if mode==:disabled or mode==false #early abort
 			accu=[]
@@ -64,7 +80,7 @@ module SimpleColor
 						red=m[3]; green=m[4]; blue=m[5]
 						tcol ? lcolormode=:truecolor : lcolormode=colormode
 						accu << RGBHelper.rgb(red, green, blue, background: !!on, mode: lcolormode)
-					elsif (m=col.match(/(on_)?rgb256[+:-]?(gr[ae]y)(\d+)([+:-](\d+)[+:-](\d+))?/))
+					elsif (m=col.match(/(on_)?rgb256[+:-]?(gr[ae]y)?(\d+)([+:-](\d+)[+:-](\d+))?/))
 						on=m[1]; grey=m[2]
 						red=m[3]; green=m[4]; blue=m[5]
 						if grey

@@ -46,15 +46,15 @@ module SimpleColor
 		end
 
 		def rgb256(red, green, blue, background: false)
-			rgb=16 + 36 * red + 6 * green + blue
-			"#{background ? 48 : 38}#{rgb}"
+			rgb=16 + 36 * red.to_i + 6 * green.to_i + blue.to_i
+			"#{background ? 48 : 38};5;#{rgb}"
 		end
 		def grey256(grey, background: false)
-			grey=232+grey
-			"#{background ? 48 : 38}#{grey}"
+			grey=232+grey.to_i
+			"#{background ? 48 : 38};5;#{grey}"
 		end
 		def direct256(code, background: false)
-			"#{background ? 48 : 38}#{code}"
+			"#{background ? 48 : 38};5;#{code}"
 		end
 
 		# Returns 24-bit color value (see https://gist.github.com/XVilka/8346728)
@@ -70,7 +70,7 @@ module SimpleColor
 			sep = 42.5
 
 			while gray_possible
-				if red < sep || green < sep || blue < sep
+				if red < sep || green < sep || blue < sep #todo: to_f
 					gray = red < sep && green < sep && blue < sep
 					gray_possible = false
 				end

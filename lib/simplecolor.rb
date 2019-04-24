@@ -23,6 +23,7 @@ module SimpleColor
 	module Colorer
 		extend self
 		WrongColor=Class.new(StandardError)
+		WrongColorParameter=Class.new(StandardError)
 
 		# For RGB 256 colors,
 		# Foreground = "\e[38;5;#{fg}m", Background = "\e[48;5;#{bg}m"
@@ -90,8 +91,10 @@ module SimpleColor
 				"%{"+buffer+"%}"
 			when :disabled
 				"" # already handled above
-			else
+			when :enabled, true
 				buffer
+			else
+				raise WrongColorParameter.new(mode)
 			end
 		end
 

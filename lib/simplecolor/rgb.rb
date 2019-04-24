@@ -13,6 +13,7 @@ module SimpleColor
 	end
 
 	module RGBHelper
+		WrongRGBColorParameter=Class.new(StandardError)
 		extend self
 
 		# If not true_color, creates a 256-compatible color from rgb values,
@@ -28,6 +29,8 @@ module SimpleColor
 
 			when TRUE_COLOR, :truecolor, true
 				"#{background ? 48 : 38}#{rgb_true(red, green, blue)}"
+			else
+				raise WrongRGBColorParameter.new(mode)
 			end
 		end
 

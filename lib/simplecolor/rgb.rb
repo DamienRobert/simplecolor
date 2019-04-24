@@ -34,6 +34,17 @@ module SimpleColor
 			end
 		end
 
+		# Creates RGB color from a HTML-like color definition string
+		def rgb_hex(string, **opts)
+			case string.size
+			when 6
+				color_code = string.each_char.each_slice(2).map{ |hex_color| hex_color.join.to_i(16) }
+			when 3
+				color_code = string.each_char.map{ |hex_color_half| (hex_color_half*2).to_i(16) }
+			end
+			rgb(*color_code, **opts)
+		end
+
 		def rgb256(red, green, blue, background: false)
 			rgb=16 + 36 * red + 6 * green + blue
 			"#{background ? 48 : 38}#{rgb}"

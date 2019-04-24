@@ -75,10 +75,16 @@ module SimpleColor
 							accu << RGBHelper.direct256(red, background: !!on)
 						end
 					else
-						if RGB_COLORS.key?(col)
-							accu << RGBHelper.rgb(*RGB_COLORS[col], mode: colormode)
-						else
-							raise WrongColor.new(col)
+						col.match(/(t:)?(on_)?(.*)/) do |m|
+							tcol=m[1]; on=m[2]; string=m[3]
+							tcol ? lcolormode=:truecolor : lcolormode=colormode
+							if (m=string.match(/\A#?(?<hex_color>[[:xdigit:]]{3}{1,2})\z/)) # 3 or 6 hex chars
+								accu << RGBHelper.rgb_hex(m[:hex_color], background: !!on, mode: lcolormode)
+							elsif RGB_COLORS.key?(string)
+								accu << RGBHelper.rgb(*RGB_COLORS[string], background: !!on, mode: lcolormode)
+							else
+								raise WrongColor.new(col)
+							end
 						end
 					end
 				else

@@ -131,7 +131,7 @@ module SimpleColor
 		:blue		 => [ 92,  92, 255],
 		:magenta => [255,		0, 255],
 		:cyan		 => [  0, 255, 255],
-		:white	 => [255, 255, 255], 
+		:white	 => [255, 255, 255],
 		:gray => [255, 255, 255],
 	}.each { |_k, v| v.freeze }.freeze
 

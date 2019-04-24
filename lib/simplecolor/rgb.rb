@@ -7,24 +7,28 @@ module SimpleColor
 
 		# If not true_color, creates a 256-compatible color from rgb values,
 		# otherwise, an exact 24-bit color
-		def rgb(red, green, blue, background = false)
-			case @mode
+		def rgb(red, green, blue, background: false, mode: :truecolor)
+			case mode
 			when 8
-				"#{background ? 4 : 3}#{rgb_to_ansi(red, green, blue, false)}"
+				"#{background ? 4 : 3}#{rgb_to_ansi(red, green, blue, use_bright: false)}"
 			when 16
-				"#{background ? 4 : 3}#{rgb_to_ansi(red, green, blue, true)}"
+				"#{background ? 4 : 3}#{rgb_to_ansi(red, green, blue, use_bright: true)}"
 			when 256
 				"#{background ? 48 : 38}#{rgb_to_256(red, green, blue)}"
-			when TRUE_COLOR
+			when TRUE_COLOR, :truecolor
 				"#{background ? 48 : 38}#{rgb_true(red, green, blue)}"
 			end
 		end
 
+		# Returns 24-bit color value (see https://gist.github.com/XVilka/8346728)
+		# in ANSI escape sequnce format, without fore-/background information
+		def rgb_true(red, green, blue)
+			";2;#{red};#{green};#{blue}"
+		end
+
 		# Returns closest supported 256-color an RGB value, without fore-/background information
 		# Inspired by the rainbow gem
-		def rgb_to_256(red, green, blue, approx = true)
-			return ";2;#{red};#{green};#{blue}" unless approx
-
+		def rgb_to_256(red, green, blue)
 			gray_possible = true
 			sep = 42.5
 
@@ -47,7 +51,7 @@ module SimpleColor
 
 		# Returns best ANSI color matching an RGB value, without fore-/background information
 		# See https://mail.python.org/pipermail/python-list/2008-December/1150496.html
-		def rgb_to_ansi(red, green, blue, use_bright = false)
+		def rgb_to_ansi(red, green, blue, use_bright: false)
 			color_pool =	RGB_COLORS_ANSI.values
 			color_pool += RGB_COLORS_ANSI_BRIGHT.values if use_bright
 

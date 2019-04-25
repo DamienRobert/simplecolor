@@ -57,6 +57,11 @@ describe SimpleColor do
 		SimpleColor.color?(SimpleColor.color("red",:red)).must_equal true
 	end
 
+	it "Can only show color escape when passed nil" do
+		SimpleColor.color(nil, "lavender").must_equal "\e[38;2;230;230;250m"
+	end
+
+
 	describe "Shortcuts" do
 		before do
 			SimpleColor.color_names={red: SimpleColor.color(:green), color1: SimpleColor.color(nil, "lavender")}

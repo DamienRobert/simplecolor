@@ -35,7 +35,6 @@ module SimpleColor
 				"#{background ? 4 : 3}#{rgb_to_ansi(red, green, blue, use_bright: true)}"
 			when 256
 				"#{background ? 48 : 38}#{rgb_to_256(red, green, blue)}"
-
 			when TRUE_COLOR, :truecolor, true
 				"#{background ? 48 : 38}#{rgb_true(red, green, blue)}"
 			else

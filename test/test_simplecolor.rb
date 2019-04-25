@@ -62,6 +62,9 @@ describe SimpleColor do
 		before do
 			SimpleColor.enabled=:shell
 		end
+		after do
+			SimpleColor.enabled=true
+		end
 
 		it "Wraps color into shell escapes" do
 			SimpleColor.color("red",:red).must_equal "%{\e[31m%}red%{\e[0m%}"
@@ -87,7 +90,6 @@ describe SimpleColor do
 
 	describe "It can be mixed in strings" do
 		before do
-			SimpleColor.enabled=true
 			SimpleColor.mix_in_string
 		end
 
@@ -129,6 +131,9 @@ describe SimpleColor do
 	describe "It can be disabled" do
 		before do
 			SimpleColor.enabled=false
+		end
+		after do
+			SimpleColor.enabled=true
 		end
 
 		it "When disabled color should be a noop" do
@@ -181,6 +186,9 @@ describe SimpleColor do
 
 		before do
 			SimpleColor2.enabled=true
+		end
+		after do
+			SimpleColor.enabled=true
 		end
 
 		it "Can color too" do

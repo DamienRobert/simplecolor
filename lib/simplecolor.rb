@@ -67,7 +67,7 @@ module SimpleColor
 					accu << col.to_s
 				when Array
 					if col.size == 3 && col.all?{ |n| n.is_a? Numeric }
-						accu << RGBHelper.rgb(*col, mode: colormode)
+						accu << RGB.rgb(*col, mode: colormode)
 					else
 						raise WrongColor.new(col)
 					end
@@ -81,27 +81,27 @@ module SimpleColor
 						on=m[:on]; grey=m[:grey]
 						red=m[:red]; green=m[:green]; blue=m[:blue]
 						if grey
-							accu << RGBHelper.grey256(red, background: !!on)
+							accu << RGB.grey256(red, background: !!on)
 							raise WrongColor.new(col) if green
 						elsif green and blue
-							accu << RGBHelper.rgb256(red, green, blue, background: !!on)
+							accu << RGB.rgb256(red, green, blue, background: !!on)
 						else
 							raise WrongColor.new(col) if green
-							accu << RGBHelper.direct256(red, background: !!on)
+							accu << RGB.direct256(red, background: !!on)
 						end
 					elsif (m=col.match(/\A#{truecol}#{on}(?:rgb[+:-]?)?(?<red>\d+)[+:-](?<green>\d+)[+:-](?<blue>\d+)\z/))
 						tcol=m[:truecol]; on=m[:on]
 						red=m[:red]; green=m[:green]; blue=m[:blue]
 						tcol ? lcolormode=:truecolor : lcolormode=colormode
-						accu << RGBHelper.rgb(red, green, blue, background: !!on, mode: lcolormode)
+						accu << RGB.rgb(red, green, blue, background: !!on, mode: lcolormode)
 					else
 						col.match(/\A#{truecol}#{on}(?<rest>.*)\z/) do |m|
 							tcol=m[:truecol]; on=m[:on]; string=m[:rest]
 							tcol ? lcolormode=:truecolor : lcolormode=colormode
 							if (m=string.match(/\A#?(?<hex_color>[[:xdigit:]]{3}{1,2})\z/)) # 3 or 6 hex chars
-								accu << RGBHelper.rgb_hex(m[:hex_color], background: !!on, mode: lcolormode)
-							elsif RGB_COLORS.key?(string)
-								accu << RGBHelper.rgb(*RGB_COLORS[string], background: !!on, mode: lcolormode)
+								accu << RGB.rgb_hex(m[:hex_color], background: !!on, mode: lcolormode)
+							elsif (cleaned=RGB.rgb_name(string); RGB_COLORS.key?(cleaned))
+								accu << RGB.rgb(*RGB_COLORS[cleaned], background: !!on, mode: lcolormode)
 							else
 								raise WrongColor.new(col)
 							end

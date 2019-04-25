@@ -1,20 +1,29 @@
+require 'json'
+require "zlib"
+
 # rgb color conversion
 # taken from the paint gem, all copyright belong to its author
 
 module SimpleColor
-	require "zlib"
-	rgb_colors = File.dirname(__FILE__) + "/../../data/rgb_colors.marshal.gz"
+	rgb_colors = File.dirname(__FILE__) + "/../../data/rgb_colors.json.gz"
 	# A list of color names, based on X11's rgb.txt
 
+	# Rewrite file:
+	# h={}; SimpleColor::RGB_COLORS.each do |k,v| h[SimpleColor::RGB.rgb_name(k)]=v end
+	# Pathname.new("data/rgb_colors.json").write(h.to_json)
 	File.open(rgb_colors, "rb") do |file|
 		serialized_data = Zlib::GzipReader.new(file).read
-		serialized_data.force_encoding Encoding::BINARY
-		RGB_COLORS = Marshal.load(serialized_data)
+		# serialized_data.force_encoding Encoding::BINARY
+		RGB_COLORS = JSON.parse(serialized_data)
 	end
 
-	module RGBHelper
+	module RGB
 		WrongRGBColorParameter=Class.new(StandardError)
 		extend self
+
+		def rgb_name(name) #clean up name
+			name.gsub(/\s+/,'').downcase
+		end
 
 		# If not true_color, creates a 256-compatible color from rgb values,
 		# otherwise, an exact 24-bit color

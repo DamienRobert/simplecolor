@@ -57,6 +57,22 @@ describe SimpleColor do
 		SimpleColor.color?(SimpleColor.color("red",:red)).must_equal true
 	end
 
+	describe "Shortcuts" do
+		before do
+			SimpleColor.color_names={red: SimpleColor.color(:green), color1: SimpleColor.color(nil, "lavender")}
+		end
+		after do
+			SimpleColor.color_names={}
+		end
+
+		it "Can use the color1 shortcut" do
+			SimpleColor.color("foo", :color1).must_equal "\e[38;2;230;230;250mfoo\e[0m"
+		end
+		it "Shortcuts have precedence" do
+			SimpleColor.color("foo", :red).must_equal SimpleColor.color("foo", :green)
+		end
+	end
+
 
 	describe "Shell mode" do
 		before do

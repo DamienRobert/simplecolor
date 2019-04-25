@@ -53,12 +53,17 @@ module SimpleColor
 		#     (t:)(on_)#ABC (reduced hex code, truecolor)
 		#     (t:)(on_)name (X11 color name, truecolor)
 
-		def color_attributes(*args, mode: :text, colormode: :truecolor)
+		def color_attributes(*args, mode: :text, colormode: :truecolor, shortcuts: {})
 			return "" if mode==:disabled or mode==false #early abort
 			accu=[]
 			buffer=""
 			flush=lambda {r=accu.join(";"); accu=[]; r.empty? || r="\e["+r+"m"; buffer<<r} #Note: "\e"="\x1b"
 			args.each do |col|
+				if shortcuts.key?(col)
+					flush.call
+					buffer << shortcuts[col]
+					next
+				end
 				case col
 				when Symbol
 					raise WrongColor.new(col) unless COLORS.key?(col)
@@ -107,6 +112,8 @@ module SimpleColor
 							end
 						end
 					end
+				when nil
+					# skip
 				else
 					raise WrongColor.new(col)
 				end
@@ -275,7 +282,7 @@ module SimpleColor
 
 			class << mod
 				attr_accessor :opts
-				{enabled: :mode, color_mode: :colormode}.each do |i,k|
+				{enabled: :mode, color_mode: :colormode, color_names: :shortcuts}.each do |i,k|
 					define_method(i) do
 						opts[k]
 					end

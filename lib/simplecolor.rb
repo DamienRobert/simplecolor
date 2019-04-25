@@ -75,24 +75,28 @@ module SimpleColor
 					flush.call
 					buffer<<col
 				when String
-					if (m=col.match(/(t:)?(on_)?rgb[+:-]?(\d+)[+:-](\d+)[+:-](\d+)/))
-						tcol=m[1]; on=m[2]
-						red=m[3]; green=m[4]; blue=m[5]
-						tcol ? lcolormode=:truecolor : lcolormode=colormode
-						accu << RGBHelper.rgb(red, green, blue, background: !!on, mode: lcolormode)
-					elsif (m=col.match(/(on_)?rgb256[+:-]?(gr[ae]y)?(\d+)([+:-](\d+)[+:-](\d+))?/))
-						on=m[1]; grey=m[2]
-						red=m[3]; green=m[4]; blue=m[5]
+					truecol=/(?<truecol>(?:truecolor|true|t):)?/
+					on=/(?<on>on_)?/
+					if (m=col.match(/\A#{on}(?:rgb)?256[+:-]?(?<grey>gr[ae]y)?(?<red>\d+)(?:[+:-](?<green>\d+)[+:-](?<blue>\d+))?\z/))
+						on=m[:on]; grey=m[:grey]
+						red=m[:red]; green=m[:green]; blue=m[:blue]
 						if grey
 							accu << RGBHelper.grey256(red, background: !!on)
+							raise WrongColor.new(col) if green
 						elsif green and blue
 							accu << RGBHelper.rgb256(red, green, blue, background: !!on)
 						else
+							raise WrongColor.new(col) if green
 							accu << RGBHelper.direct256(red, background: !!on)
 						end
+					elsif (m=col.match(/\A#{truecol}#{on}(?:rgb[+:-]?)?(?<red>\d+)[+:-](?<green>\d+)[+:-](?<blue>\d+)\z/))
+						tcol=m[:truecol]; on=m[:on]
+						red=m[:red]; green=m[:green]; blue=m[:blue]
+						tcol ? lcolormode=:truecolor : lcolormode=colormode
+						accu << RGBHelper.rgb(red, green, blue, background: !!on, mode: lcolormode)
 					else
-						col.match(/(t:)?(on_)?(.*)/) do |m|
-							tcol=m[1]; on=m[2]; string=m[3]
+						col.match(/\A#{truecol}#{on}(?<rest>.*)\z/) do |m|
+							tcol=m[:truecol]; on=m[:on]; string=m[:rest]
 							tcol ? lcolormode=:truecolor : lcolormode=colormode
 							if (m=string.match(/\A#?(?<hex_color>[[:xdigit:]]{3}{1,2})\z/)) # 3 or 6 hex chars
 								accu << RGBHelper.rgb_hex(m[:hex_color], background: !!on, mode: lcolormode)

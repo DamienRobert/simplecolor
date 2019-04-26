@@ -73,24 +73,24 @@ describe SimpleColor do
 		SimpleColor.opts.must_equal(SimpleColor::Helpers::DefaultOpts)
 	end
 
-	describe "Shortcuts" do
+	describe "Abbreviations" do
 		before do
-			SimpleColor.color_names={red: SimpleColor.color(:green), color1: SimpleColor.color(nil, "lavender")}
+			SimpleColor.abbreviations={red: SimpleColor.color(:green), color1: SimpleColor.color(nil, "lavender")}
 		end
 
-		it "Can use the color1 shortcut" do
+		it "Can use the color1 abbreviations" do
 			SimpleColor.color("foo", :color1).must_equal "\e[38;2;230;230;250mfoo\e[0m"
 		end
-		it "Shortcuts have precedence" do
+		it "Abbrevations have precedence" do
 			SimpleColor.color("foo", :red).must_equal SimpleColor.color("foo", :green)
 		end
 	end
 
-	describe "Default shortcuts" do
-		it "Has a default :random shortcut" do
+	describe "Default abbreviations" do
+		it "Has a default :random abbreviation" do
 			SimpleColor.color("foo", :random).must_match(/\e\[38;2;\d+;\d+;\d+mfoo\e\[0m/)
 		end
-		it "Has a default :on_random shortcut" do
+		it "Has a default :on_random abbreviation" do
 			SimpleColor.color("foo", :on_random).must_match(/\e\[48;2;\d+;\d+;\d+mfoo\e\[0m/)
 		end
 	end

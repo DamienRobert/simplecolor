@@ -25,12 +25,10 @@ module SimpleColor
 		WrongColor=Class.new(StandardError)
 		WrongColorParameter=Class.new(StandardError)
 
-		# A color can be:
-		# - a symbol (looked in at COLORS)
-		# - an integer (direct color code)
+		# A color name can be:
 		# - an array of rgb data (truecolor)
-		# - a color escape sequence
-		# - a String
+		#   (start with :on to specify background)
+		# - a String:
 		#     rgb:10-20-30 (foreground truecolor)
 		#     on_rgb:10-20-30 (background truecolor)
 		#     t:rgb... (don't fallback to lower color mode)
@@ -40,8 +38,16 @@ module SimpleColor
 		#     (t:)(on_)#AABBCC (hex code, truecolor)
 		#     (t:)(on_)#ABC (reduced hex code, truecolor)
 		#     (t:)(on_)name (X11 color name, truecolor)
+		def color_name(args)
+			#TODO
+		end
 
-		def color_attributes(*args, mode: :text, colormode: :truecolor, shortcuts: {})
+		# A color attribute can be:
+		# - a symbol (looked in at COLORS)
+		# - an integer (direct color code)
+		# - a color escape sequence
+		# - a String
+		def color_attributes(*args, mode: :text, colormode: :truecolor, shortcuts: {}, colornames: RGB_COLORS)
 			return "" if mode==:disabled or mode==false #early abort
 			shortcuts={} if shortcuts.nil?
 			accu=[]
@@ -59,8 +65,6 @@ module SimpleColor
 						buffer << color_attributes(scol, mode: mode, colormode: colormode, shortcuts: {}) #we erase shortcuts so :red = :red do not get an infinite loop
 					end
 					next
-				elsif col.is_a?(String) and col.start_with("on_")
-					foreground=col.delete_prefix("on_")
 				end
 				case col
 				when Proc
@@ -110,8 +114,8 @@ module SimpleColor
 							tcol ? lcolormode=:truecolor : lcolormode=colormode
 							if (m=string.match(/\A#?(?<hex_color>[[:xdigit:]]{3}{1,2})\z/)) # 3 or 6 hex chars
 								accu << RGB.rgb_hex(m[:hex_color], background: !!on, mode: lcolormode)
-							elsif (cleaned=RGB.rgb_name(string); RGB_COLORS.key?(cleaned))
-								accu << RGB.rgb(*RGB_COLORS[cleaned], background: !!on, mode: lcolormode)
+							elsif (cleaned=RGB.rgb_name(string); colornames.key?(cleaned))
+								accu << RGB.rgb(*colornames[cleaned], background: !!on, mode: lcolormode)
 							else
 								raise WrongColor.new(col)
 							end
@@ -304,6 +308,8 @@ module SimpleColor
 		extend self
 		Shortcuts={ random: proc { [RGB.rgb_random] },
 			on_random: proc { [RGB.rgb_random(background: true)]},
+		}
+		ColorNames=RGB_COLORS.merge({
 			"solarized_base03" =>   "#002b36",
 			"solarized_base02" =>  "#073642",
 			"solarized_base01" =>  "#586e75",
@@ -320,8 +326,8 @@ module SimpleColor
 			"solarized_blue"   => "#268bd2",
 			"solarized_cyan"   => "#2aa198",
 			"solarized_green"  => "#859900",
-		}
-		DefaultOpts={mode: true, colormode: :truecolor, shortcuts: Shortcuts}
+		})
+		DefaultOpts={mode: true, colormode: :truecolor, shortcuts: Shortcuts, colornames: ColorNames}
 
 		def mix_in(klass)
 			klass.send :include, SimpleColor
@@ -335,7 +341,7 @@ module SimpleColor
 
 			class << mod
 				attr_accessor :opts
-				{enabled: :mode, color_mode: :colormode, color_names: :shortcuts}.each do |i,k|
+				{enabled: :mode, mode: :mode, color_mode: :colormode, color_names: :colornames, abbreviations: :shortcuts}.each do |i,k|
 					define_method(i) do
 						opts[k]
 					end
@@ -348,7 +354,6 @@ module SimpleColor
 			dopts= respond_to?(:opts) ? opts : DefaultOpts
 			# mod.opts=Marshal.load(Marshal.dump(dopts)) #deep clone?
 			mod.opts=dopts.clone
-
 
 			coloring=Module.new do
 				# enabled can be set to true, false, or :shell

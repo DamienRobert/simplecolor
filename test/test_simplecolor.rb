@@ -61,6 +61,10 @@ describe SimpleColor do
 		SimpleColor.color(nil, "lavender").must_equal "\e[38;2;230;230;250m"
 	end
 
+	it "Accepts a block as color parameter" do
+		SimpleColor.color("foo", proc { "lavender" }).must_equal "\e[38;2;230;230;250mfoo\e[0m"
+	end
+
 	it "Has default options" do
 		SimpleColor.opts.must_equal(SimpleColor::Helpers::DefaultOpts)
 	end

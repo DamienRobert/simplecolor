@@ -176,6 +176,13 @@ describe SimpleColor do
 			word="\e[31mred\e[0m"
 			SimpleColor.uncolor(word).must_equal "red"
 		end
+
+		it "Can be disabled punctually" do
+			SimpleColor.enabled=true
+			word="red"
+			SimpleColor.color(word,:red, mode: false).must_equal word
+			SimpleColor.color(word,:red).must_equal "\e[31mred\e[0m"
+		end
 	end
 
 	describe "It has colors helpers utilities" do
@@ -264,6 +271,21 @@ describe SimpleColor do
 			SimpleColor4.opts.must_equal({mode: true, colormode: 16})
 			SimpleColor.opts.must_equal(SimpleColor::Helpers::DefaultOpts)
 			SimpleColor4.enabled=false
+		end
+	end
+
+	describe "It raises invalid parameters" do
+		it "Raises when we pass invalid parameter" do
+			proc { SimpleColor.color("foo", mode: :garbage)}.must_raise SimpleColor::Colorer::WrongColorParameter
+		end
+
+		it "Raises when we pass invalid rgb parameter" do
+			proc { SimpleColor.color("foo", "lavender", colormode:10)}.must_raise SimpleColor::RGB::WrongRGBColorParameter
+		end
+
+		it "Raises when we pass an invalid color" do
+			proc { SimpleColor.color("foo", :garbage)}.must_raise SimpleColor::Colorer::WrongColor
+			proc { SimpleColor.color("foo", "nonexistingcolorname")}.must_raise SimpleColor::Colorer::WrongColor
 		end
 	end
 end

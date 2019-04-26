@@ -48,8 +48,68 @@ module SimpleColor
 	RGB_COLORS_ANSI_16 = RGB_COLORS_ANSI.merge(RGB_COLORS_ANSI_BRIGHT)
 
 	class RGB2
+		module Parsers
+			def rgb_name(name) #clean up name
+				name.gsub(/\s+/,'').downcase
+			end
+			# Creates RGB color from a HTML-like color definition string
+			def rgb_hex(string)
+				case string.size
+				when 6
+					string.each_char.each_slice(2).map{ |hex_color| hex_color.join.to_i(16) }
+				when 3
+					string.each_char.map{ |hex_color_half| (hex_color_half*2).to_i(16) }
+				else
+					raise WrongRGBColor.new(string)
+				end
+			end
+
+			def parse(col, color_names: {})
+				case col
+				when Symbol
+					raise WrongColor.new(col) unless ANSI_COLORS_16.key?(col)
+					self.new(col, mode: 16)
+				when Array
+					self.new(col, mode: true)
+				when String
+					if (m=col.match(/\A(?:rgb)?256[+:-]?(?<grey>gr[ae]y)?(?<red>\d+)(?:[+:-](?<green>\d+)[+:-](?<blue>\d+))?\z/))
+						grey=m[:grey]; red=m[:red]; green=m[:green]; blue=m[:blue]
+						if grey
+							self.new(232+red, mode: 256)
+						elsif green and blue
+							self.new([red, green, blue], mode: 256)
+						else
+							raise WrongRGBColor.new(col) if green
+							self.new(red, mode: 256)
+						end
+					elsif (m=col.match(/\A(?:rgb[+:-]?)?(?<red>\d+)[+:-](?<green>\d+)[+:-](?<blue>\d+)\z/))
+						red=m[:red]; green=m[:green]; blue=m[:blue]
+						self.new([red, green, blue], mode: :truecolor)
+					elsif (m=col.match(/\A#?(?<hex_color>[[:xdigit:]]{3}{1,2})\z/)) # 3 or 6 hex chars
+						self.new(rgb_hex(m[:hex_color]), mode: :truecolor)
+					else
+						cleaned=rgb_name(string)
+						if color_names.key?(cleaned)
+							self.new(color_names[cleaned], mode: :truecolor)
+						else
+							raise WrongRGBColor.new(col)
+						end
+					end
+				end
+			end
+		end
+		extend Parsers
+
+		module Utils
+			def rgb_random(background: false)
+				(background ? [:on] : []) + (1..3).map { Random.rand(256) }
+			end
+		end
+		extend Utils
+
 		attr_accessor :color, :mode
 		def initialize(rgb, mode: true)
+			@init=rgb
 			@color=rgb #should be an array for truecolor, a number otherwise
 			case mode
 			when 8, 16, 256
@@ -57,14 +117,45 @@ module SimpleColor
 			when true, :truecolor, 0xFFFFFF
 				@mode=:truecolor
 			else
-				raise WrongRGBColorParameter.new(mode)
+				raise WrongRGBParameter.new(mode)
 			end
+			
+			case @mode
+			when 256 #for 256 colors we are more lenient
+				case rgb
+				when Array
+					red, green, blue=rgb
+					@color=16 + 36 * red.to_i + 6 * green.to_i + blue.to_i
+				when String, Symbol #for grey mode
+					if (m=rgb.to_s.match(/\Agr[ae]y(\d+)\z/))
+						@color=232+m[1].to_i
+					else
+						raise WrongRGBColorName.new(rgb)
+					end
+				else
+					raise WrongRGBColorName.new(rgb)
+				end
+			when 8,16
+				@color=ANSI_COLORS_16[rgb] if ANSI_COLORS_16.key?(rgb)
+			end
+			# TODO raise when wront error passed
 		end
 
 		def truecolor?
 			@mode == :truecolor
 		end
 
+		# For RGB 256 colors,
+		# Foreground = "\e[38;5;#{fg}m", Background = "\e[48;5;#{bg}m"
+		# where the color code is
+		# 0-	7:	standard colors (as in ESC [ 30–37 m)
+		# 8- 15:	high intensity colors (as in ESC [ 90–97 m)
+		# 16-231:  6 × 6 × 6 cube (216 colors): 16 + 36 × r + 6 × g + b (0 ≤ r, g, b ≤ 5)
+		#232-255:  grayscale from black to white in 24 steps
+
+		#For true colors:
+		#		ESC[ 38;2;<r>;<g>;<b> m Select RGB foreground color
+		#		ESC[ 48;2;<r>;<g>;<b> m Select RGB background color
 		def to_ansi(background: false)
 			case @mode
 			when 8, 16
@@ -141,126 +232,10 @@ module SimpleColor
 		end
 
 		def to_16
-			color_pool = RGB_COLORS_ANSI.values+RGB_COLORS_ANSI_BRIGHT.values
+			color_pool = RGB_COLORS_ANSI_16.values
 			closest=rgb_to_pool(color_pool)
-			name=RGB_COLORS_ANSI.key(closest) || RGB_COLORS_ANSI_BRIGHT.key(closest)
+			name=RGB_COLORS_ANSI_16.key(closest)
 			self.class.new(ANSI_COLORS_16[name], mode: 16)
-		end
-
-	end
-
-
-	module RGB
-		# For RGB 256 colors,
-		# Foreground = "\e[38;5;#{fg}m", Background = "\e[48;5;#{bg}m"
-		# where the color code is
-		# 0-	7:	standard colors (as in ESC [ 30–37 m)
-		# 8- 15:	high intensity colors (as in ESC [ 90–97 m)
-		# 16-231:  6 × 6 × 6 cube (216 colors): 16 + 36 × r + 6 × g + b (0 ≤ r, g, b ≤ 5)
-		#232-255:  grayscale from black to white in 24 steps
-
-		#For true colors:
-		#		ESC[ 38;2;<r>;<g>;<b> m Select RGB foreground color
-		#		ESC[ 48;2;<r>;<g>;<b> m Select RGB background color
-
-		WrongRGBColorParameter=Class.new(StandardError)
-		extend self
-
-		def rgb_random(background: false)
-			(background ? [:on] : []) + (1..3).map { Random.rand(256) }
-		end
-
-		def rgb_name(name) #clean up name
-			name.gsub(/\s+/,'').downcase
-		end
-
-		# If not true_color, creates a 256-compatible color from rgb values,
-		# otherwise, an exact 24-bit color
-		def rgb(red, green, blue, background: false, mode: :truecolor)
-			case mode
-			when 8
-				"#{background ? 4 : 3}#{rgb_to_ansi(red, green, blue, use_bright: false)}"
-			when 16
-				"#{background ? 4 : 3}#{rgb_to_ansi(red, green, blue, use_bright: true)}"
-			when 256
-				"#{background ? 48 : 38}#{rgb_to_256(red, green, blue)}"
-			when TRUE_COLOR, :truecolor, true
-				"#{background ? 48 : 38};2;#{red};#{green};#{blue}"
-			else
-				raise WrongRGBColorParameter.new(mode)
-			end
-		end
-
-		# Creates RGB color from a HTML-like color definition string
-		def rgb_hex(string, **opts)
-			case string.size
-			when 6
-				color_code = string.each_char.each_slice(2).map{ |hex_color| hex_color.join.to_i(16) }
-			when 3
-				color_code = string.each_char.map{ |hex_color_half| (hex_color_half*2).to_i(16) }
-			end
-			rgb(*color_code, **opts)
-		end
-
-		def rgb256(red, green, blue, background: false)
-			rgb=16 + 36 * red.to_i + 6 * green.to_i + blue.to_i
-			"#{background ? 48 : 38};5;#{rgb}"
-		end
-		def grey256(grey, background: false)
-			grey=232+grey.to_i
-			"#{background ? 48 : 38};5;#{grey}"
-		end
-		def direct256(code, background: false)
-			"#{background ? 48 : 38};5;#{code}"
-		end
-
-		# Returns 24-bit color value (see https://gist.github.com/XVilka/8346728)
-		# in ANSI escape sequnce format, without fore-/background information
-		def rgb_true(red, green, blue)
-			";2;#{red};#{green};#{blue}"
-		end
-
-		# Returns closest supported 256-color an RGB value, without fore-/background information
-		# Inspired by the rainbow gem
-		def rgb_to_256(red, green, blue)
-			gray_possible = true
-			sep = 42.5
-
-			while gray_possible
-				if red < sep || green < sep || blue < sep #todo: to_f
-					gray = red < sep && green < sep && blue < sep
-					gray_possible = false
-				end
-				sep += 42.5
-			end
-
-			if gray
-				";5;#{ 232 + ((red.to_f + green.to_f + blue.to_f)/33).round }"
-			else # rgb
-				";5;#{ [16, *[red, green, blue].zip([36, 6, 1]).map{ |color, mod|
-					(6 * (color.to_f / 256)).to_i * mod
-				}].inject(:+) }"
-			end
-		end
-
-		# Returns best ANSI color matching an RGB value, without fore-/background information
-		# See https://mail.python.org/pipermail/python-list/2008-December/1150496.html
-		def rgb_to_pool(color_pool)
-			if truecolor?
-				color_pool.min_by{ |col| rgb_color_distance([red, green, blue],col) }
-			else
-				to_truecolor.rgb_to_pool(color_pool)
-			end
-		end
-
-		def truecolor?
-			@mode == true or @mode == :truecolor or @mode = 0xFFFFFF
-		end
-
-		def rgb_color_distance(rgb1, rgb2)
-			rgb1.zip(rgb2).inject(0){ |acc, (cur1, cur2)|
-				acc + (cur1 - cur2)**2
-			}
 		end
 	end
 end

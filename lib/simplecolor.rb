@@ -38,10 +38,6 @@ module SimpleColor
 		#     (t:)(on_)#AABBCC (hex code, truecolor)
 		#     (t:)(on_)#ABC (reduced hex code, truecolor)
 		#     (t:)(on_)name (X11 color name, truecolor)
-		def color_name(args)
-			#TODO
-		end
-
 		# A color attribute can be:
 		# - a symbol (looked in at COLORS)
 		# - an integer (direct color code)

@@ -1,6 +1,5 @@
 require 'simplecolor/version'
 require 'simplecolor/colors'
-require 'simplecolor/rgb'
 
 #Usage:
 #
@@ -18,26 +17,29 @@ require 'simplecolor/rgb'
 #`"blue".color(:blue,:bold)`
 module SimpleColor
 	extend self
+	SimpleColorError=Class.new(StandardError)
+	require 'simplecolor/rgb'
 
 	# The Colorer module handle all color outputs
 	module Colorer
 		extend self
-		WrongColor=Class.new(StandardError)
-		WrongColorParameter=Class.new(StandardError)
+		ColorerError=Class.new(SimpleColorError)
+		WrongColor=Class.new(ColorerError)
+		WrongColorParameter=Class.new(ColorerError)
 
 		# A color name can be:
 		# - an array of rgb data (truecolor)
-		#   (start with :on to specify background)
+		#		(start with :on to specify background)
 		# - a String:
-		#     rgb:10-20-30 (foreground truecolor)
-		#     on_rgb:10-20-30 (background truecolor)
-		#     t:rgb... (don't fallback to lower color mode)
-		#     (on_)rgb256:r:g:b  (force 256 color mode)
-		#     (on_)rgb256:grey3 (256 grey scale)
-		#     (on_)rgb256:5 (direct color code)
-		#     (t:)(on_)#AABBCC (hex code, truecolor)
-		#     (t:)(on_)#ABC (reduced hex code, truecolor)
-		#     (t:)(on_)name (X11 color name, truecolor)
+		#			rgb:10-20-30 (foreground truecolor)
+		#			on_rgb:10-20-30 (background truecolor)
+		#			t:rgb... (don't fallback to lower color mode)
+		#			(on_)rgb256:r:g:b  (force 256 color mode)
+		#			(on_)rgb256:grey3 (256 grey scale)
+		#			(on_)rgb256:5 (direct color code)
+		#			(t:)(on_)#AABBCC (hex code, truecolor)
+		#			(t:)(on_)#ABC (reduced hex code, truecolor)
+		#			(t:)(on_)name (X11 color name, truecolor)
 		# A color attribute can be:
 		# - a symbol (looked in at COLORS)
 		# - an integer (direct color code)
@@ -51,15 +53,9 @@ module SimpleColor
 			flush=lambda {r=accu.join(";"); accu=[]; r.empty? || r="\e["+r+"m"; buffer<<r} #Note: "\e"="\x1b"
 			args.each do |col|
 				if shortcuts.key?(col)
-					scol=shortcuts[col]
-					case scol
-					when Array
-						# Array are special, in a non shortcut they mean an rgb mode
-						# but for shortcuts it just combine several color attributes
-						buffer << color_attributes(*scol, mode: mode, colormode: colormode, shortcuts: {}) #we erase shortcuts so :red = :red do not get an infinite loop
-					else
-						buffer << color_attributes(scol, mode: mode, colormode: colormode, shortcuts: {}) #we erase shortcuts so :red = :red do not get an infinite loop
-					end
+					scol=*shortcuts[col]
+					# Array are special, in a non shortcut they mean an rgb mode but for shortcuts it just combine several color attributes
+					buffer << color_attributes(*scol, mode: mode, colormode: colormode, shortcuts: {}) #we erase shortcuts so :red = :red do not get an infinite loop
 					next
 				end
 				case col
@@ -69,61 +65,32 @@ module SimpleColor
 				when Symbol
 					raise WrongColor.new(col) unless COLORS.key?(col)
 					accu<<COLORS[col]
-				when Integer #direct color code
+				when Integer #direct ansi code
 					accu << col.to_s
 				when Array
 					background=false
 					if col.first == :on
 						background=true; col.shift
 					end
-					if col.size == 3 && col.all?{ |n| n.is_a? Numeric }
-						accu << RGB.rgb(*col, mode: colormode, background: background)
-					else
-						raise WrongColor.new(col)
-					end
+					accu << RGB.new(col).ansi(convert: colormode, background: background)
 				when COLOR_REGEXP
 					flush.call
 					buffer<<col
 				when String
 					truecol=/(?<truecol>(?:truecolor|true|t):)?/
 					on=/(?<on>on_)?/
-					if (m=col.match(/\A#{on}(?:rgb)?256[+:-]?(?<grey>gr[ae]y)?(?<red>\d+)(?:[+:-](?<green>\d+)[+:-](?<blue>\d+))?\z/))
-						on=m[:on]; grey=m[:grey]
-						red=m[:red]; green=m[:green]; blue=m[:blue]
-						if grey
-							accu << RGB.grey256(red, background: !!on)
-							raise WrongColor.new(col) if green
-						elsif green and blue
-							accu << RGB.rgb256(red, green, blue, background: !!on)
-						else
-							raise WrongColor.new(col) if green
-							accu << RGB.direct256(red, background: !!on)
-						end
-					elsif (m=col.match(/\A#{truecol}#{on}(?:rgb[+:-]?)?(?<red>\d+)[+:-](?<green>\d+)[+:-](?<blue>\d+)\z/))
-						tcol=m[:truecol]; on=m[:on]
-						red=m[:red]; green=m[:green]; blue=m[:blue]
+					col.match(/\A#{truecol}#{on}(?<rest>.*)\z/) do |m|
+						tcol=m[:truecol]; on=m[:on]; string=m[:rest]
 						tcol ? lcolormode=:truecolor : lcolormode=colormode
-						accu << RGB.rgb(red, green, blue, background: !!on, mode: lcolormode)
-					else
-						col.match(/\A#{truecol}#{on}(?<rest>.*)\z/) do |m|
-							tcol=m[:truecol]; on=m[:on]; string=m[:rest]
-							tcol ? lcolormode=:truecolor : lcolormode=colormode
-							if (m=string.match(/\A#?(?<hex_color>[[:xdigit:]]{3}{1,2})\z/)) # 3 or 6 hex chars
-								accu << RGB.rgb_hex(m[:hex_color], background: !!on, mode: lcolormode)
-							elsif (cleaned=RGB.rgb_name(string); colornames.key?(cleaned))
-								accu << RGB.rgb(*colornames[cleaned], background: !!on, mode: lcolormode)
-							else
-								raise WrongColor.new(col)
-							end
-						end
+						accu << RGB.parse(string, color_names: colornames).ansi(background: !!on, convert: lcolormode)
 					end
-				when nil
-					# skip
+				when nil # skip
 				else
 					raise WrongColor.new(col)
 				end
 			end
 			flush.call
+
 			case mode
 			when :shell
 				"%{"+buffer+"%}"
@@ -193,20 +160,20 @@ module SimpleColor
 				clear=color_attributes(:clear,**kwds)
 				pos=0
 
-        split=SimpleColor.color_strings(s, color_regexp: color_reg)
-        first=split.first
-        split.shift
-        if first&.match(color_reg)
-        	pos+=first.length
+				split=SimpleColor.color_strings(s, color_regexp: color_reg)
+				first=split.first
+				split.shift
+				if first&.match(color_reg)
+					pos+=first.length
 					s.insert(pos, colors)
 					pos+=colors.length
-        end
-        split.each do |sp|
-        	if sp.match(/#{clear_reg}$/)
-        		pos+=sp.length
+				end
+				split.each do |sp|
+					if sp.match(/#{clear_reg}$/)
+						pos+=sp.length
 						s.insert(pos, colors)
-        	end
-        end
+					end
+				end
 		end
 
 		# Returns an uncolored version of the string, that is all
@@ -306,7 +273,7 @@ module SimpleColor
 			on_random: proc { [RGB.rgb_random(background: true)]},
 		}
 		ColorNames=RGB_COLORS.merge({
-			"solarized_base03" =>   "#002b36",
+			"solarized_base03" =>		"#002b36",
 			"solarized_base02" =>  "#073642",
 			"solarized_base01" =>  "#586e75",
 			"solarized_base00" =>  "#657b83",
@@ -316,11 +283,11 @@ module SimpleColor
 			"solarized_base3"  => "#fdf6e3",
 			"solarized_yellow" => "#b58900",
 			"solarized_orange" => "#cb4b16",
-			"solarized_red"    => "#dc322f",
+			"solarized_red"		 => "#dc322f",
 			"solarized_magenta"=> "#d33682",
 			"solarized_violet" => "#6c71c4",
-			"solarized_blue"   => "#268bd2",
-			"solarized_cyan"   => "#2aa198",
+			"solarized_blue"	 => "#268bd2",
+			"solarized_cyan"	 => "#2aa198",
 			"solarized_green"  => "#859900",
 		})
 		DefaultOpts={mode: true, colormode: :truecolor, shortcuts: Shortcuts, colornames: ColorNames}

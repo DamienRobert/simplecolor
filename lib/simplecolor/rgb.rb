@@ -47,7 +47,11 @@ module SimpleColor
 
 	RGB_COLORS_ANSI_16 = RGB_COLORS_ANSI.merge(RGB_COLORS_ANSI_BRIGHT)
 
-	class RGB2
+	class RGB
+		RGBError=Class.new(SimpleColorError)
+		WrongRGBColor=Class.new(RGBError)
+		WrongRGBParameter=Class.new(RGBError)
+
 		module Parsers
 			def rgb_name(name) #clean up name
 				name.gsub(/\s+/,'').downcase
@@ -64,10 +68,10 @@ module SimpleColor
 				end
 			end
 
-			def parse(col, color_names: {})
+			def parse(col, color_names: RGB_COLORS)
 				case col
 				when Symbol
-					raise WrongColor.new(col) unless ANSI_COLORS_16.key?(col)
+					raise WrongRGBColor.new(col) unless ANSI_COLORS_16.key?(col)
 					self.new(col, mode: 16)
 				when Array
 					self.new(col, mode: true)
@@ -88,7 +92,7 @@ module SimpleColor
 					elsif (m=col.match(/\A#?(?<hex_color>[[:xdigit:]]{3}{1,2})\z/)) # 3 or 6 hex chars
 						self.new(rgb_hex(m[:hex_color]), mode: :truecolor)
 					else
-						cleaned=rgb_name(string)
+						cleaned=rgb_name(col)
 						if color_names.key?(cleaned)
 							self.new(color_names[cleaned], mode: :truecolor)
 						else
@@ -108,19 +112,31 @@ module SimpleColor
 		extend Utils
 
 		attr_accessor :color, :mode
-		def initialize(rgb, mode: true)
-			@init=rgb
-			@color=rgb #should be an array for truecolor, a number otherwise
+
+		private def color_mode(mode)
 			case mode
-			when 8, 16, 256
-				@mode=mode
 			when true, :truecolor, 0xFFFFFF
-				@mode=:truecolor
+				mode=:truecolor
+			end
+			case mode
+			when 8, 16, 256, :truecolor
+				yield mode if block_given?
+				return mode
 			else
 				raise WrongRGBParameter.new(mode)
 			end
+		end
+
+		def initialize(rgb, mode: true)
+			@init=rgb
+			@color=rgb #should be an array for truecolor, a number otherwise
+			@mode=color_mode(mode)
 			
 			case @mode
+			when :truecolor
+				unless @color&.size == 3 && @color&.all?{ |n| n.is_a? Numeric }
+					raise WrongRGBColor.new(rgb)
+				end
 			when 256 #for 256 colors we are more lenient
 				case rgb
 				when Array
@@ -138,7 +154,7 @@ module SimpleColor
 			when 8,16
 				@color=ANSI_COLORS_16[rgb] if ANSI_COLORS_16.key?(rgb)
 			end
-			# TODO raise when wront error passed
+			# TODO raise when wrong color passed
 		end
 
 		def truecolor?
@@ -156,7 +172,8 @@ module SimpleColor
 		#For true colors:
 		#		ESC[ 38;2;<r>;<g>;<b> m Select RGB foreground color
 		#		ESC[ 48;2;<r>;<g>;<b> m Select RGB background color
-		def to_ansi(background: false)
+		def ansi(background: false, convert: nil)
+			convert(convert).ansi(background: background, convert: nil) if convert
 			case @mode
 			when 8, 16
 				"#{background ? 4 : 3}#{@color}"
@@ -165,6 +182,19 @@ module SimpleColor
 			when :truecolor
 				red, green, blue=@color
 				"#{background ? 48 : 38};2;#{red};#{green};#{blue}"
+			end
+		end
+
+		def convert(mode)
+			case @mode=color_mode(mode)
+			when 8
+				to_8
+			when 16
+				to_16
+			when 256
+				to_256
+			when :truecolor
+				to_truecolor
 			end
 		end
 

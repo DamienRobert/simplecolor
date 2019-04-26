@@ -169,11 +169,12 @@ module SimpleColor
 			if s.nil?
 				color_attributes(*attributes,**kwds)
 			elsif s.empty?
+				# We don't color an empty string; use nil to get color attributes
 				s
 			else
 				# we need to insert the ANSI sequences after existing ones so that
 				# the new colors have precedence
-				matched = s.match(regexp(:match, **kwds))
+				matched = s.match(regexp(:match, **kwds)) #since this has a '*' it matches at the beginning
 				attributes=color_attributes(*attributes,**kwds)
 				s.insert(matched.end(0), attributes)
 				s.concat(color_attributes(:clear,**kwds)) unless s =~ /#{regexp(:clear, **kwds)}$/ or attributes.empty?
@@ -314,7 +315,7 @@ module SimpleColor
 				# sequence will not count in the length of the prompt.
 				include ColorWrapper
 
-				[:color,:color!, :uncolor, :uncolor!, :color?].each do |m|
+				ColorWrapper.instance_methods.each do |m|
 					define_method m do |*args, **opts, &b|
 						opts=mod.opts.merge(opts)
 						super(*args, **opts, &b)

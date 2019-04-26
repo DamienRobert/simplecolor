@@ -228,15 +228,8 @@ module SimpleColor
 		end
 	end
 
-	module Helpers
+	module Utilities
 		extend self
-
-		def mix_in(klass)
-			klass.send :include, SimpleColor
-		end
-		def mix_in_string
-			mix_in(String)
-		end
 
 		# scan s from left to right and for each ansi sequences found
 		# split it into elementary components and output the symbolic meaning
@@ -275,6 +268,18 @@ module SimpleColor
 			u.shift if u.first == ""
 			u
 		end
+	end
+
+	module Helpers
+		extend self
+		DefaultOpts={mode: true, colormode: :truecolor, shortcuts: {}}
+
+		def mix_in(klass)
+			klass.send :include, SimpleColor
+		end
+		def mix_in_string
+			mix_in(String)
+		end
 
 		def color_module(mod=nil)
 			mod=Module.new if mod.nil?
@@ -290,7 +295,11 @@ module SimpleColor
 					end
 				end
 			end
-			mod.opts={mode: true, colormode: :truecolor}
+			#copy caller's options
+			dopts= respond_to?(:opts) ? opts : DefaultOpts
+			# mod.opts=Marshal.load(Marshal.dump(dopts)) #deep clone?
+			mod.opts=dopts.clone
+
 
 			coloring=Module.new do
 				# enabled can be set to true, false, or :shell
@@ -313,6 +322,7 @@ module SimpleColor
 		end
 	end
 
+	extend Utilities
 	extend Helpers
 	Helpers.color_module(self)
 end

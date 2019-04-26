@@ -61,6 +61,9 @@ describe SimpleColor do
 		SimpleColor.color(nil, "lavender").must_equal "\e[38;2;230;230;250m"
 	end
 
+	it "Has default options" do
+		SimpleColor.opts.must_equal(SimpleColor::Helpers::DefaultOpts)
+	end
 
 	describe "Shortcuts" do
 		before do
@@ -239,8 +242,28 @@ describe SimpleColor do
 			SimpleColor3.color("red", :red).must_equal "\e[31mred\e[0m"
 		end
 
-		it "In this case can't changed :enabled" do
+		it "In this case can't change :enabled" do
 			SimpleColor3.respond_to?(:enabled).must_equal false
+		end
+	end
+
+	describe "Setting a different color module copy the defaults opts" do
+		module SimpleColor4
+		end
+		old_opts=SimpleColor.opts
+		SimpleColor.opts={mode: false, colormode: 16}
+		SimpleColor.color_module(SimpleColor4)
+		SimpleColor.opts=old_opts
+
+		it "Has the same defaults as when created" do
+			SimpleColor4.opts.must_equal({mode: false, colormode: 16})
+		end
+
+		it "Changing the opts afterwards do not affect it" do
+			SimpleColor4.enabled=true
+			SimpleColor4.opts.must_equal({mode: true, colormode: 16})
+			SimpleColor.opts.must_equal(SimpleColor::Helpers::DefaultOpts)
+			SimpleColor4.enabled=false
 		end
 	end
 end

@@ -54,7 +54,7 @@ describe SimpleColor do
 			SimpleColor.color_mode=256
 		end
 		after do
-			SimpleColor.color_mode=true
+			SimpleColor.color_mode=:truecolor
 		end
 
 		it "Can specify x11 color name" do
@@ -74,7 +74,7 @@ describe SimpleColor do
 			SimpleColor.color_mode=8
 		end
 		after do
-			SimpleColor.color_mode=true
+			SimpleColor.color_mode=:truecolor
 		end
 
 		it "Can specify x11 color name" do

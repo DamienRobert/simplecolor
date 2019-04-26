@@ -5,6 +5,10 @@ require "zlib"
 # taken from the paint gem, all copyright belong to its author
 
 module SimpleColor
+	RGBError=Class.new(SimpleColorError)
+	WrongRGBColor=Class.new(RGBError)
+	WrongRGBParameter=Class.new(RGBError)
+
 	rgb_colors = File.dirname(__FILE__) + "/../../data/rgb_colors.json.gz"
 	# A list of color names, based on X11's rgb.txt
 
@@ -48,10 +52,6 @@ module SimpleColor
 	RGB_COLORS_ANSI_16 = RGB_COLORS_ANSI.merge(RGB_COLORS_ANSI_BRIGHT)
 
 	class RGB
-		RGBError=Class.new(SimpleColorError)
-		WrongRGBColor=Class.new(RGBError)
-		WrongRGBParameter=Class.new(RGBError)
-
 		module Parsers
 			def rgb_name(name) #clean up name
 				name.gsub(/\s+/,'').downcase
@@ -141,9 +141,18 @@ module SimpleColor
 				unless @color&.size == 3 && @color&.all?{ |n| n.is_a? Numeric }
 					raise WrongRGBColor.new(rgb)
 				end
+				raise WrongRGBColor.new(rgb) unless rgb.all? do |c|
+					(0..255).include?(c)
+				end
 			when 256 #for 256 colors we are more lenient
 				case rgb
 				when Array
+					unless @color&.size == 3 && @color&.all?{ |n| n.is_a? Numeric }
+						raise WrongRGBColor.new(rgb)
+					end
+					raise WrongRGBColor.new(rgb) unless rgb.all? do |c|
+						(0..5).include?(c)
+					end
 					red, green, blue=rgb
 					@color=16 + 36 * red.to_i + 6 * green.to_i + blue.to_i
 				when String, Symbol #for grey mode
@@ -166,6 +175,11 @@ module SimpleColor
 			@mode == :truecolor
 		end
 
+		def nbcolors
+			return 0xFFFFFF if @mode == :truecolor
+			return @mode
+		end
+
 		# For RGB 256 colors,
 		# Foreground = "\e[38;5;#{fg}m", Background = "\e[48;5;#{bg}m"
 		# where the color code is
@@ -183,23 +197,23 @@ module SimpleColor
 			when 8, 16
 				"#{background ? 4 : 3}#{@color}"
 			when 256
-				"#{background ? 48 : 38}#{@color}"
+				"#{background ? 48 : 38};5;#{@color}"
 			when :truecolor
 				red, green, blue=@color
 				"#{background ? 48 : 38};2;#{red};#{green};#{blue}"
 			end
 		end
 
-		def convert(mode)
-			case @mode=color_mode(mode)
+		def convert(mode, only_down: true)
+			case color_mode(mode)
 			when 8
 				to_8
 			when 16
-				to_16
+				to_16 unless only_down and nbcolors < 16
 			when 256
-				to_256
+				to_256 unless only_down and nbcolors < 256
 			when :truecolor
-				to_truecolor
+				to_truecolor unless only_down and nbcolors < 0xFFFFFF
 			end
 		end
 
@@ -213,7 +227,7 @@ module SimpleColor
 
 		def rgb_to_pool(color_pool)
 			if truecolor?
-				color_pool.min_by{ |col| rgb_color_distance([red, green, blue],col) }
+				color_pool.min_by{ |col| rgb_color_distance(col) }
 			else
 				to_truecolor.rgb_to_pool(color_pool)
 			end
@@ -225,7 +239,8 @@ module SimpleColor
 				name=RGB_COLORS_ANSI_16.key(@color)
 				self.class.new(ANSI_COLORS_16[name])
 			when 256
-				self #todo
+				to_16.to_truecolor
+				# self #todo
 			else
 				self
 			end
@@ -238,6 +253,8 @@ module SimpleColor
 			when 8, 16
 				return self.class.new(@color, mode: 256)
 			else
+				red,green,blue=@color
+
 				gray_possible = true
 				sep = 42.5
 
@@ -249,13 +266,15 @@ module SimpleColor
 					sep += 42.5
 				end
 
-				if gray
+				col=if gray
 					232 + ((red.to_f + green.to_f + blue.to_f)/33).round
 				else # rgb
 					[16, *[red, green, blue].zip([36, 6, 1]).map{ |color, mod|
 						(6 * (color.to_f / 256)).to_i * mod
 					}].inject(:+)
 				end
+				self.class.new(col, mode: 256)
+
 			end
 		end
 

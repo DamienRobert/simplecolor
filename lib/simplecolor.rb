@@ -18,14 +18,14 @@ require 'simplecolor/colors'
 module SimpleColor
 	extend self
 	SimpleColorError=Class.new(StandardError)
+	ColorerError=Class.new(SimpleColorError)
+	WrongColor=Class.new(ColorerError)
+	WrongParameter=Class.new(ColorerError)
 	require 'simplecolor/rgb'
 
 	# The Colorer module handle all color outputs
 	module Colorer
 		extend self
-		ColorerError=Class.new(SimpleColorError)
-		WrongColor=Class.new(ColorerError)
-		WrongParameter=Class.new(ColorerError)
 
 		# A color name can be:
 		# - an array of rgb data (truecolor)

@@ -65,6 +65,10 @@ describe SimpleColor do
 		SimpleColor.color("foo", proc { "lavender" }).must_equal "\e[38;2;230;230;250mfoo\e[0m"
 	end
 
+	it "Proc as color parameter can return multiple values" do
+		SimpleColor.color("foo", proc { ["lavender", :bold] }).must_equal "\e[38;2;230;230;250;1mfoo\e[0m"
+	end
+
 	it "Has default options" do
 		SimpleColor.opts.must_equal(SimpleColor::Helpers::DefaultOpts)
 	end

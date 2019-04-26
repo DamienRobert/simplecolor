@@ -62,8 +62,8 @@ module SimpleColor
 				end
 				case col
 				when Proc
-					scol=col.call(buffer, accu)
-					buffer << color_attributes(scol, mode: mode, colormode: colormode, shortcuts: shortcuts)
+					scol=*col.call(buffer, accu)
+					buffer << color_attributes(*scol, mode: mode, colormode: colormode, shortcuts: shortcuts)
 				when Symbol
 					raise WrongColor.new(col) unless COLORS.key?(col)
 					accu<<COLORS[col]
@@ -182,6 +182,29 @@ module SimpleColor
 			end
 		end
 
+		def colorer2
+				color_reg=regexp(:color, **kwds)
+				clear_reg=regexp(:clear, **kwds)
+				colors=color_attributes(*attributes,**kwds)
+				clear=color_attributes(:clear,**kwds)
+				pos=0
+
+        split=SimpleColor.color_strings(s, color_regexp: color_reg)
+        first=split.first
+        split.shift
+        if first&.match(color_reg)
+        	pos+=first.length
+					s.insert(pos, colors)
+					pos+=colors.length
+        end
+        split.each do |sp|
+        	if sp.match(/#{clear_reg}$/)
+        		pos+=sp.length
+						s.insert(pos, colors)
+        	end
+        end
+		end
+
 		# Returns an uncolored version of the string, that is all
 		# ANSI-sequences are stripped from the string.
 		# @see: colorer
@@ -262,12 +285,12 @@ module SimpleColor
 		end
 
 		#split the line into characters and ANSII color sequences
-		def color_entities(l)
-			l.split(/(#{COLOR_REGEXP})/).flat_map {|c| color?(c) ? [c] : c.split('') }
+		def color_entities(l, color_regexp: COLOR_REGEXP)
+			l.split(/(#{color_regexp})/).flat_map {|c| color?(c) ? [c] : c.split('') }
 		end
 		#same as above but split into strings
-		def color_strings(l)
-			u=l.split(/(#{COLOR_REGEXP})/)
+		def color_strings(l, color_regexp: COLOR_REGEXP)
+			u=l.split(/(#{color_regexp})/)
 			# if we start with an ANSI sequence, u is ["", ...], so we need to
 			# get rid of that ""
 			u.shift if u.first == ""

@@ -12,8 +12,8 @@ class TestSimpleColor < MiniTest::Test
 end
 
 describe SimpleColor do
-	before do
-		SimpleColor.enabled=true
+	after do #restore default options
+		SimpleColor.opts=SimpleColor::Helpers::DefaultOpts.clone
 	end
 
 	it "Can be used directly" do
@@ -69,9 +69,6 @@ describe SimpleColor do
 		before do
 			SimpleColor.color_names={red: SimpleColor.color(:green), color1: SimpleColor.color(nil, "lavender")}
 		end
-		after do
-			SimpleColor.color_names={}
-		end
 
 		it "Can use the color1 shortcut" do
 			SimpleColor.color("foo", :color1).must_equal "\e[38;2;230;230;250mfoo\e[0m"
@@ -85,9 +82,6 @@ describe SimpleColor do
 	describe "Shell mode" do
 		before do
 			SimpleColor.enabled=:shell
-		end
-		after do
-			SimpleColor.enabled=true
 		end
 
 		it "Wraps color into shell escapes" do
@@ -156,9 +150,6 @@ describe SimpleColor do
 		before do
 			SimpleColor.enabled=false
 		end
-		after do
-			SimpleColor.enabled=true
-		end
 
 		it "When disabled color should be a noop" do
 			word="red"
@@ -208,13 +199,6 @@ describe SimpleColor do
 		end
 		SimpleColor.color_module(SimpleColor2)
 
-		before do
-			SimpleColor2.enabled=true
-		end
-		after do
-			SimpleColor.enabled=true
-		end
-
 		it "Can color too" do
 			SimpleColor2.color("red", :red).must_equal "\e[31mred\e[0m"
 		end
@@ -226,10 +210,10 @@ describe SimpleColor do
 		end
 
 		it "Can be disabled without disabling SimpleColor" do
-			SimpleColor.enabled=true
 			SimpleColor2.enabled=false
 			SimpleColor.color("red", :red).must_equal "\e[31mred\e[0m"
 			SimpleColor2.color("red", :red).must_equal "red"
+			SimpleColor2.enabled=true
 		end
 	end
 

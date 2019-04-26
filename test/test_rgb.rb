@@ -17,6 +17,10 @@ describe SimpleColor::RGB do
 end
 
 describe SimpleColor do
+	after do #restore default options
+		SimpleColor.opts=SimpleColor::Helpers::DefaultOpts.clone
+	end
+
 	it "Can parse a true color name" do
 		SimpleColor.color("foo", "rgb:10-20-30").must_equal "\e[38;2;10;20;30mfoo\e[0m"
 		SimpleColor.color("foo", "10-20-30").must_equal "\e[38;2;10;20;30mfoo\e[0m"
@@ -55,9 +59,6 @@ describe SimpleColor do
 		before do
 			SimpleColor.color_mode=256
 		end
-		after do
-			SimpleColor.color_mode=:truecolor
-		end
 
 		it "Can specify x11 color name" do
 			SimpleColor.color("foo", "Lemon Chiffon").must_equal "\e[38;5;230mfoo\e[0m"
@@ -74,9 +75,6 @@ describe SimpleColor do
 	describe "It can fallback to 8 colors" do
 		before do
 			SimpleColor.color_mode=8
-		end
-		after do
-			SimpleColor.color_mode=:truecolor
 		end
 
 		it "Can specify x11 color name" do

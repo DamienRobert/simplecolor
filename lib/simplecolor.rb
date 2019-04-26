@@ -25,18 +25,6 @@ module SimpleColor
 		WrongColor=Class.new(StandardError)
 		WrongColorParameter=Class.new(StandardError)
 
-		# For RGB 256 colors,
-		# Foreground = "\e[38;5;#{fg}m", Background = "\e[48;5;#{bg}m"
-		# where the color code is
-		# 0-	7:	standard colors (as in ESC [ 30–37 m)
-		# 8- 15:	high intensity colors (as in ESC [ 90–97 m)
-		# 16-231:  6 × 6 × 6 cube (216 colors): 16 + 36 × r + 6 × g + b (0 ≤ r, g, b ≤ 5)
-		#232-255:  grayscale from black to white in 24 steps
-
-		#For true colors:
-		#		ESC[ 38;2;<r>;<g>;<b> m Select RGB foreground color
-		#		ESC[ 48;2;<r>;<g>;<b> m Select RGB background color
-
 		# A color can be:
 		# - a symbol (looked in at COLORS)
 		# - an integer (direct color code)
@@ -55,16 +43,27 @@ module SimpleColor
 
 		def color_attributes(*args, mode: :text, colormode: :truecolor, shortcuts: {})
 			return "" if mode==:disabled or mode==false #early abort
+			shortcuts={} if shortcuts.nil?
 			accu=[]
 			buffer=""
 			flush=lambda {r=accu.join(";"); accu=[]; r.empty? || r="\e["+r+"m"; buffer<<r} #Note: "\e"="\x1b"
 			args.each do |col|
 				if shortcuts.key?(col)
-					flush.call
-					buffer << shortcuts[col]
+					scol=shortcuts[col]
+					case scol
+					when Array
+						# Array are special, in a non shortcut they mean an rgb mode
+						# but for shortcuts it just combine several color attributes
+						buffer << color_attributes(*scol, mode: mode, colormode: colormode, shortcuts: {}) #we erase shortcuts so :red = :red do not get an infinite loop
+					else
+						buffer << color_attributes(scol, mode: mode, colormode: colormode, shortcuts: {}) #we erase shortcuts so :red = :red do not get an infinite loop
+					end
 					next
 				end
 				case col
+				when Proc
+					scol=col.call(buffer, accu)
+					buffer << color_attributes(scol, mode: mode, colormode: colormode, shortcuts: shortcuts)
 				when Symbol
 					raise WrongColor.new(col) unless COLORS.key?(col)
 					accu<<COLORS[col]

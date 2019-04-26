@@ -18,6 +18,18 @@ module SimpleColor
 	end
 
 	module RGB
+		# For RGB 256 colors,
+		# Foreground = "\e[38;5;#{fg}m", Background = "\e[48;5;#{bg}m"
+		# where the color code is
+		# 0-	7:	standard colors (as in ESC [ 30–37 m)
+		# 8- 15:	high intensity colors (as in ESC [ 90–97 m)
+		# 16-231:  6 × 6 × 6 cube (216 colors): 16 + 36 × r + 6 × g + b (0 ≤ r, g, b ≤ 5)
+		#232-255:  grayscale from black to white in 24 steps
+
+		#For true colors:
+		#		ESC[ 38;2;<r>;<g>;<b> m Select RGB foreground color
+		#		ESC[ 48;2;<r>;<g>;<b> m Select RGB background color
+
 		WrongRGBColorParameter=Class.new(StandardError)
 		extend self
 

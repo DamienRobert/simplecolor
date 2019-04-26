@@ -276,11 +276,11 @@ describe SimpleColor do
 
 	describe "It raises invalid parameters" do
 		it "Raises when we pass invalid parameter" do
-			proc { SimpleColor.color("foo", mode: :garbage)}.must_raise SimpleColor::Colorer::WrongColorParameter
+			proc { SimpleColor.color("foo", mode: :garbage)}.must_raise SimpleColor::Colorer::WrongParameter
 		end
 
 		it "Raises when we pass invalid rgb parameter" do
-			proc { SimpleColor.color("foo", "lavender", colormode:10)}.must_raise SimpleColor::RGB::WrongRGBColorParameter
+			proc { SimpleColor.color("foo", "lavender", colormode:10)}.must_raise SimpleColor::RGB::WrongParameter
 		end
 
 		it "Raises when we pass an invalid color" do

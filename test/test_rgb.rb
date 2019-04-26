@@ -3,16 +3,16 @@ require 'simplecolor'
 
 describe SimpleColor::RGB do
 	it "Should output truecolor code" do
-		SimpleColor::RGB.rgb(10,20,30).must_equal "38;2;10;20;30"
+		SimpleColor::RGB.new(10,20,30).ansi.must_equal "38;2;10;20;30"
 	end
 	it "Can degrade to 256 colors" do
-		SimpleColor::RGB.rgb(10,20,30, mode: 256).must_equal "38;5;234"
+		SimpleColor::RGB.new(10,20,30, mode: 256).ansi.must_equal "38;5;234"
 	end
 	it "Can degrade to 16 colors" do
-		SimpleColor::RGB.rgb(10,20,160, mode: 16).must_equal "34"
+		SimpleColor::RGB.new(10,20,160, mode: 16).ansi.must_equal "34"
 	end
 	it "Can degrade to 8 colors" do
-		SimpleColor::RGB.rgb(10,20,30, mode: 8).must_equal "30"
+		SimpleColor::RGB.new(10,20,30, mode: 8).ansi.must_equal "30"
 	end
 end
 

@@ -77,7 +77,7 @@ module SimpleColor
 					self.new(col, mode: true)
 				when String
 					if (m=col.match(/\A(?:rgb)?256[+:-]?(?<grey>gr[ae]y)?(?<red>\d+)(?:[+:-](?<green>\d+)[+:-](?<blue>\d+))?\z/))
-						grey=m[:grey]; red=m[:red]; green=m[:green]; blue=m[:blue]
+						grey=m[:grey]; red=m[:red].to_i; green=m[:green].to_i; blue=m[:blue].to_i
 						if grey
 							self.new(232+red, mode: 256)
 						elsif green and blue
@@ -87,7 +87,7 @@ module SimpleColor
 							self.new(red, mode: 256)
 						end
 					elsif (m=col.match(/\A(?:rgb[+:-]?)?(?<red>\d+)[+:-](?<green>\d+)[+:-](?<blue>\d+)\z/))
-						red=m[:red]; green=m[:green]; blue=m[:blue]
+						red=m[:red].to_i; green=m[:green].to_i; blue=m[:blue].to_i
 						self.new([red, green, blue], mode: :truecolor)
 					elsif (m=col.match(/\A#?(?<hex_color>[[:xdigit:]]{3}{1,2})\z/)) # 3 or 6 hex chars
 						self.new(rgb_hex(m[:hex_color]), mode: :truecolor)
@@ -127,7 +127,11 @@ module SimpleColor
 			end
 		end
 
-		def initialize(rgb, mode: true)
+		def initialize(*rgb, mode: :truecolor)
+			raise WrongRGBColor.new(rgb) if rgb.empty?
+			rgb=rgb.first if rgb.length==1
+			raise WrongRGBColor.new(rgb) if rgb.nil?
+
 			@init=rgb
 			@color=rgb #should be an array for truecolor, a number otherwise
 			@mode=color_mode(mode)
@@ -146,13 +150,14 @@ module SimpleColor
 					if (m=rgb.to_s.match(/\Agr[ae]y(\d+)\z/))
 						@color=232+m[1].to_i
 					else
-						raise WrongRGBColorName.new(rgb)
+						raise WrongRGBColor.new(rgb)
 					end
 				else
-					raise WrongRGBColorName.new(rgb)
+					raise WrongRGBColor.new(rgb) unless @color.is_a?(Numeric)
 				end
 			when 8,16
 				@color=ANSI_COLORS_16[rgb] if ANSI_COLORS_16.key?(rgb)
+				raise WrongRGBColor.new(rgb) unless @color.is_a?(Numeric)
 			end
 			# TODO raise when wrong color passed
 		end
@@ -217,8 +222,8 @@ module SimpleColor
 		def to_truecolor
 			case @mode
 			when 8, 16
-				name=ANSI_COLORS_16.key(@color)
-				self.class.new(RGB_COLORS_ANSI_16[name])
+				name=RGB_COLORS_ANSI_16.key(@color)
+				self.class.new(ANSI_COLORS_16[name])
 			when 256
 				self #todo
 			else

@@ -25,7 +25,7 @@ module SimpleColor
 		extend self
 		ColorerError=Class.new(SimpleColorError)
 		WrongColor=Class.new(ColorerError)
-		WrongColorParameter=Class.new(ColorerError)
+		WrongParameter=Class.new(ColorerError)
 
 		# A color name can be:
 		# - an array of rgb data (truecolor)
@@ -99,7 +99,7 @@ module SimpleColor
 			when :enabled, true
 				buffer
 			else
-				raise WrongColorParameter.new(mode)
+				raise WrongParameter.new(mode)
 			end
 		end
 

@@ -28,6 +28,25 @@ module SimpleColor
 		:white	 => 7,
 		:default => 9,
 	}
+
+	ANSI_COLORS_16 = {
+		:black	 => 0,
+		:red		 => 1,
+		:green	 => 2,
+		:yellow  => 3,
+		:blue		 => 4,
+		:magenta => 5,
+		:cyan		 => 6,
+		:white	 => 7,
+		:intense_black	 => 8,
+		:intense_red		 => 9,
+		:intense_green	 => 10,
+		:intense_yellow  => 11,
+		:intense_blue		 => 12,
+		:intense_magenta => 13,
+		:intense_cyan		 => 14,
+		:intense_white	 => 15,
+	}
 	
 	ANSI_EFFECTS = {
 		:reset				 => 0,	:nothing				 => 0,	# usually supported

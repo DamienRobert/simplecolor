@@ -34,16 +34,120 @@ module SimpleColor
 	# A list of color names for standard bright ansi colors, needed for 16 color fallback mode
 	# See https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
 	RGB_COLORS_ANSI_BRIGHT = {
-		:black	 => [127, 127, 127],
-		:red		 => [255,		0,	 0],
-		:green	 => [  0, 255,	 0],
-		:yellow  => [255, 255,	 0],
-		:blue		 => [ 92,  92, 255],
-		:magenta => [255,		0, 255],
-		:cyan		 => [  0, 255, 255],
-		:white	 => [255, 255, 255],
-		:gray => [255, 255, 255],
+		:intense_black	 => [127, 127, 127],
+		:intense_red		 => [255,		0,	 0],
+		:intense_green	 => [  0, 255,	 0],
+		:intense_yellow  => [255, 255,	 0],
+		:intense_blue		 => [ 92,  92, 255],
+		:intense_magenta => [255,		0, 255],
+		:intense_cyan		 => [  0, 255, 255],
+		:intense_white	 => [255, 255, 255],
+		:intense_gray => [255, 255, 255],
 	}.each { |_k, v| v.freeze }.freeze
+
+	RGB_COLORS_ANSI_16 = RGB_COLORS_ANSI.merge(RGB_COLORS_ANSI_BRIGHT)
+
+	class RGB2
+		attr_accessor :color, :mode
+		def initialize(rgb, mode: true)
+			@color=rgb #should be an array for truecolor, a number otherwise
+			case mode
+			when 8, 16, 256
+				@mode=mode
+			when true, :truecolor, 0xFFFFFF
+				@mode=:truecolor
+			else
+				raise WrongRGBColorParameter.new(mode)
+			end
+		end
+
+		def truecolor?
+			@mode == :truecolor
+		end
+
+		def to_ansi(background: false)
+			case @mode
+			when 8, 16
+				"#{background ? 4 : 3}#{@color}"
+			when 256
+				"#{background ? 48 : 38}#{@color}"
+			when :truecolor
+				red, green, blue=@color
+				"#{background ? 48 : 38};2;#{red};#{green};#{blue}"
+			end
+		end
+
+		def rgb_color_distance(rgb2)
+			if truecolor?
+				@color.zip(rgb2.to_truecolor).inject(0){ |acc, (cur1, cur2)| acc + (cur1 - cur2)**2 }
+			else
+				to_truecolor.rgb_color_distance(rgb2)
+			end
+		end
+
+		def rgb_to_pool(color_pool)
+			if truecolor?
+				color_pool.min_by{ |col| rgb_color_distance([red, green, blue],col) }
+			else
+				to_truecolor.rgb_to_pool(color_pool)
+			end
+		end
+
+		def to_truecolor
+			case @mode
+			when 8, 16
+				name=ANSI_COLORS_16.key(@color)
+				self.class.new(RGB_COLORS_ANSI_16[name])
+			when 256
+				self #todo
+			else
+				self
+			end
+		end
+
+		def to_256
+			case @mode
+			when 256
+				return self
+			when 8, 16
+				return self.class.new(@color, mode: 256)
+			else
+				gray_possible = true
+				sep = 42.5
+
+				while gray_possible
+					if red < sep || green < sep || blue < sep
+						gray = red < sep && green < sep && blue < sep
+						gray_possible = false
+					end
+					sep += 42.5
+				end
+
+				if gray
+					232 + ((red.to_f + green.to_f + blue.to_f)/33).round
+				else # rgb
+					[16, *[red, green, blue].zip([36, 6, 1]).map{ |color, mod|
+						(6 * (color.to_f / 256)).to_i * mod
+					}].inject(:+)
+				end
+			end
+		end
+
+		def to_8
+			color_pool = RGB_COLORS_ANSI.values
+			closest=rgb_to_pool(color_pool)
+			name=RGB_COLORS_ANSI.key(closest)
+			self.class.new(ANSI_COLORS_16[name], mode: 8)
+		end
+
+		def to_16
+			color_pool = RGB_COLORS_ANSI.values+RGB_COLORS_ANSI_BRIGHT.values
+			closest=rgb_to_pool(color_pool)
+			name=RGB_COLORS_ANSI.key(closest) || RGB_COLORS_ANSI_BRIGHT.key(closest)
+			self.class.new(ANSI_COLORS_16[name], mode: 16)
+		end
+
+	end
 
 
 	module RGB
@@ -81,7 +185,7 @@ module SimpleColor
 			when 256
 				"#{background ? 48 : 38}#{rgb_to_256(red, green, blue)}"
 			when TRUE_COLOR, :truecolor, true
-				"#{background ? 48 : 38}#{rgb_true(red, green, blue)}"
+				"#{background ? 48 : 38};2;#{red};#{green};#{blue}"
 			else
 				raise WrongRGBColorParameter.new(mode)
 			end
@@ -141,17 +245,16 @@ module SimpleColor
 
 		# Returns best ANSI color matching an RGB value, without fore-/background information
 		# See https://mail.python.org/pipermail/python-list/2008-December/1150496.html
-		def rgb_to_ansi(red, green, blue, use_bright: false)
-			color_pool =	RGB_COLORS_ANSI.values
-			color_pool += RGB_COLORS_ANSI_BRIGHT.values if use_bright
-
-			ansi_color_rgb = color_pool.min_by{ |col| rgb_color_distance([red, green, blue],col) }
-			if ansi_color = RGB_COLORS_ANSI.key(ansi_color_rgb)
-				ANSI_COLORS[ansi_color]
+		def rgb_to_pool(color_pool)
+			if truecolor?
+				color_pool.min_by{ |col| rgb_color_distance([red, green, blue],col) }
 			else
-				ansi_color = RGB_COLORS_ANSI_BRIGHT.key(ansi_color_rgb)
-				"#{ANSI_COLORS[ansi_color]};1"
+				to_truecolor.rgb_to_pool(color_pool)
 			end
+		end
+
+		def truecolor?
+			@mode == true or @mode == :truecolor or @mode = 0xFFFFFF
 		end
 
 		def rgb_color_distance(rgb1, rgb2)

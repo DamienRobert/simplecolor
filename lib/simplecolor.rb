@@ -165,6 +165,8 @@ module SimpleColor
 			end
 		end
 
+		# Returns a colored version of the string (modified in place),
+		# according to attributes
 		def colorer(s,*attributes,**kwds)
 			if s.nil?
 				color_attributes(*attributes,**kwds)
@@ -227,7 +229,7 @@ module SimpleColor
 		#		SimpleColor.color("blue", :blue, :bold)
 		#		SimpleColor.color(:blue,:bold) { "blue" }
 		#		SimpleColor.color(:blue,:bold) << "blue" << SimpleColor.color(:clear)
-		%i(color! uncolor! color?).each do |m|
+		%i(color uncolor color! uncolor! color?).each do |m|
 			define_method m do |*args, &b|
 				arg=if b
 					b.call.to_s
@@ -239,6 +241,10 @@ module SimpleColor
 					nil
 				end
 				case m
+				when :color
+					Colorer.colorer(arg.dup,*args)
+				when :uncolor
+					Colorer.uncolorer(arg.dup,*args)
 				when :color!
 					Colorer.colorer(arg,*args)
 				when :uncolor!
@@ -246,12 +252,6 @@ module SimpleColor
 				when :color?
 					Colorer.colored?(arg,*args)
 				end
-			end
-		end
-
-		[:color,:uncolor].each do |m|
-			define_method m do |*args,&b|
-				self.dup.send :"#{m}!",*args,&b
 			end
 		end
 	end

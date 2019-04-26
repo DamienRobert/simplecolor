@@ -78,6 +78,14 @@ describe SimpleColor do
 		end
 	end
 
+	describe "Default shortcuts" do
+		it "Has a default :random shortcut" do
+			SimpleColor.color("foo", :random).must_match(/\e\[38;2;\d+;\d+;\d+mfoo\e\[0m/)
+		end
+		it "Has a default :on_random shortcut" do
+			SimpleColor.color("foo", :on_random).must_match(/\e\[48;2;\d+;\d+;\d+mfoo\e\[0m/)
+		end
+	end
 
 	describe "Shell mode" do
 		before do

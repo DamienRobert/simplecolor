@@ -62,7 +62,8 @@ module SimpleColor
 		WrongRGBColorParameter=Class.new(StandardError)
 		extend self
 
-		def rgb_random
+		def rgb_random(background: false)
+			(background ? [:on] : []) + (1..3).map { Random.rand(256) }
 		end
 
 		def rgb_name(name) #clean up name

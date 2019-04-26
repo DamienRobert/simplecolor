@@ -276,7 +276,8 @@ module SimpleColor
 
 	module Helpers
 		extend self
-		Shortcuts={}
+		Shortcuts={ random: proc { RGB.rgb_random },
+			on_random: proc { RGB.rgb_random(background: true) }}
 		DefaultOpts={mode: true, colormode: :truecolor, shortcuts: Shortcuts}
 
 		def mix_in(klass)

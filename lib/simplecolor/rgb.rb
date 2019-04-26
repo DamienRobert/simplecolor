@@ -62,6 +62,9 @@ module SimpleColor
 		WrongRGBColorParameter=Class.new(StandardError)
 		extend self
 
+		def rgb_random
+		end
+
 		def rgb_name(name) #clean up name
 			name.gsub(/\s+/,'').downcase
 		end

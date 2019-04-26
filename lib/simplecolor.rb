@@ -70,8 +70,12 @@ module SimpleColor
 				when Integer #direct color code
 					accu << col.to_s
 				when Array
+					background=false
+					if col.first == :on
+						background=true; col.shift
+					end
 					if col.size == 3 && col.all?{ |n| n.is_a? Numeric }
-						accu << RGB.rgb(*col, mode: colormode)
+						accu << RGB.rgb(*col, mode: colormode, background: background)
 					else
 						raise WrongColor.new(col)
 					end
@@ -272,7 +276,8 @@ module SimpleColor
 
 	module Helpers
 		extend self
-		DefaultOpts={mode: true, colormode: :truecolor, shortcuts: {}}
+		Shortcuts={}
+		DefaultOpts={mode: true, colormode: :truecolor, shortcuts: Shortcuts}
 
 		def mix_in(klass)
 			klass.send :include, SimpleColor

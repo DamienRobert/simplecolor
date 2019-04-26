@@ -21,6 +21,7 @@ describe SimpleColor do
 		SimpleColor.color("foo", "rgb:10-20-30").must_equal "\e[38;2;10;20;30mfoo\e[0m"
 		SimpleColor.color("foo", "10-20-30").must_equal "\e[38;2;10;20;30mfoo\e[0m"
 		SimpleColor.color("foo", "10:20:30").must_equal "\e[38;2;10;20;30mfoo\e[0m"
+		SimpleColor.color("foo", [10, 20, 30]).must_equal "\e[38;2;10;20;30mfoo\e[0m"
 	end
 
 	it "Can specify 256 colors" do
@@ -47,6 +48,7 @@ describe SimpleColor do
 		SimpleColor.color("foo", "on_rgb256:1+2+3").must_equal "\e[48;5;67mfoo\e[0m"
 		SimpleColor.color("foo", "on_rgb256:1").must_equal "\e[48;5;1mfoo\e[0m"
 		SimpleColor.color("foo", "on_rgb256:gray1").must_equal "\e[48;5;233mfoo\e[0m"
+		SimpleColor.color("foo", [:on, 10, 20, 30]).must_equal "\e[48;2;10;20;30mfoo\e[0m"
 	end
 
 	describe "It can fallback to 256 colors" do

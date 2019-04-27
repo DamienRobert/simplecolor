@@ -45,7 +45,7 @@ module SimpleColor
 		# - an integer (direct color code)
 		# - a color escape sequence
 		# - a String
-		def color_attributes(*args, mode: :text, colormode: :truecolor, shortcuts: {}, colornames: RGB_COLORS)
+		def color_attributes(*args, mode: :text, colormode: :truecolor, shortcuts: {}, **rgb_parse_opts)
 			return "" if mode==:disabled or mode==false #early abort
 			shortcuts={} if shortcuts.nil?
 			accu=[]
@@ -82,7 +82,7 @@ module SimpleColor
 					col.match(/\A#{truecol}#{on}(?<rest>.*)\z/) do |m|
 						tcol=m[:truecol]; on=m[:on]; string=m[:rest]
 						tcol ? lcolormode=:truecolor : lcolormode=colormode
-						accu << RGB.parse(string, color_names: colornames).ansi(background: !!on, convert: lcolormode)
+						accu << RGB.parse(string, **rgb_parse_opts).ansi(background: !!on, convert: lcolormode)
 					end
 				when nil # skip
 				else
@@ -272,25 +272,25 @@ module SimpleColor
 		Shortcuts={ random: proc { [RGB.rgb_random] },
 			on_random: proc { [RGB.rgb_random(background: true)]},
 		}
-		ColorNames=RGB_COLORS.merge({
-			"solarized_base03" =>		"#002b36",
-			"solarized_base02" =>  "#073642",
-			"solarized_base01" =>  "#586e75",
-			"solarized_base00" =>  "#657b83",
-			"solarized_base0"  => "#839496",
-			"solarized_base1"  => "#93a1a1",
-			"solarized_base2"  => "#eee8d5",
-			"solarized_base3"  => "#fdf6e3",
-			"solarized_yellow" => "#b58900",
-			"solarized_orange" => "#cb4b16",
-			"solarized_red"		 => "#dc322f",
-			"solarized_magenta"=> "#d33682",
-			"solarized_violet" => "#6c71c4",
-			"solarized_blue"	 => "#268bd2",
-			"solarized_cyan"	 => "#2aa198",
-			"solarized_green"  => "#859900",
-		})
-		DefaultOpts={mode: true, colormode: :truecolor, shortcuts: Shortcuts, colornames: ColorNames}
+		#ColorNames=RGB_COLORS.merge({
+		#	"solarized_base03" =>		"#002b36",
+		#	"solarized_base02" =>  "#073642",
+		#	"solarized_base01" =>  "#586e75",
+		#	"solarized_base00" =>  "#657b83",
+		#	"solarized_base0"  => "#839496",
+		#	"solarized_base1"  => "#93a1a1",
+		#	"solarized_base2"  => "#eee8d5",
+		#	"solarized_base3"  => "#fdf6e3",
+		#	"solarized_yellow" => "#b58900",
+		#	"solarized_orange" => "#cb4b16",
+		#	"solarized_red"		 => "#dc322f",
+		#	"solarized_magenta"=> "#d33682",
+		#	"solarized_violet" => "#6c71c4",
+		#	"solarized_blue"	 => "#268bd2",
+		#	"solarized_cyan"	 => "#2aa198",
+		#	"solarized_green"  => "#859900",
+		#})
+		DefaultOpts={mode: true, colormode: :truecolor, shortcuts: Shortcuts}
 
 		def mix_in(klass)
 			klass.send :include, SimpleColor

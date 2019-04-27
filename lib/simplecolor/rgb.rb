@@ -9,18 +9,6 @@ module SimpleColor
 	WrongRGBColor=Class.new(RGBError)
 	WrongRGBParameter=Class.new(RGBError)
 
-	rgb_colors = File.dirname(__FILE__) + "/../../data/rgb_colors.json.gz"
-	# A list of color names, based on X11's rgb.txt
-
-	# Rewrite file:
-	# h={}; SimpleColor::RGB_COLORS.each do |k,v| h[SimpleColor::RGB.rgb_name(k)]=v end
-	# Pathname.new("data/rgb_colors.json").write(h.to_json)
-	File.open(rgb_colors, "rb") do |file|
-		serialized_data = Zlib::GzipReader.new(file).read
-		# serialized_data.force_encoding Encoding::BINARY
-		RGB_COLORS = JSON.parse(serialized_data)
-	end
-
 	# A list of color names for standard ansi colors, needed for 16/8 color fallback mode
 	# See https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
 	RGB_COLORS_ANSI = {
@@ -56,9 +44,6 @@ module SimpleColor
 		TRUECOLOR=0xFFFFFF
 
 		module Parsers
-			def rgb_name(name) #clean up name
-				name.gsub(/\s+/,'').downcase
-			end
 			# Creates RGB color from a HTML-like color definition string
 			def rgb_hex(string)
 				case string.size
@@ -71,8 +56,10 @@ module SimpleColor
 				end
 			end
 
-			def parse(col, color_names: RGB_COLORS)
+			def parse(col, color_names: proc {|c| self.find_color(c)})
 				case col
+				when self
+					col
 				when Symbol
 					raise WrongRGBColor.new(col) unless ANSI_COLORS_16.key?(col)
 					self.new(col, mode: 16)
@@ -95,9 +82,8 @@ module SimpleColor
 					elsif (m=col.match(/\A#?(?<hex_color>[[:xdigit:]]{3}{1,2})\z/)) # 3 or 6 hex chars
 						self.new(rgb_hex(m[:hex_color]), mode: :truecolor)
 					else
-						cleaned=rgb_name(col)
-						if color_names.key?(cleaned)
-							self.new(color_names[cleaned], mode: :truecolor)
+						if color_names && (c=color_names[col])
+							self.parse(c, color_names: nil)
 						else
 							raise WrongRGBColor.new(col)
 						end
@@ -125,7 +111,33 @@ module SimpleColor
 					self.parse(c).to_truecolor.color
 				end
 			end
+
+			def list_color_names
+				return @rgb_color_names if @rgb_color_names
+				rgb_colors = File.dirname(__FILE__) + "/../../data/rgb_colors.json.gz"
+				# A list of color names, based on X11's rgb.txt
+
+				# Rewrite file:
+				# h={}; SimpleColor::RGB_COLORS.each do |k,v| h[SimpleColor::RGB.rgb_name(k)]=v end
+				# Pathname.new("data/rgb_colors.json").write(h.to_json)
+				File.open(rgb_colors, "rb") do |file|
+					serialized_data = Zlib::GzipReader.new(file).read
+					# serialized_data.force_encoding Encoding::BINARY
+					@rgb_color_names = JSON.parse(serialized_data)
+				end
+				@rgb_color_names
+			end
+
+			def rgb_name(name) #clean up name
+				name.gsub(/\s+/,'').downcase
+			end
+
+			def find_color(name)
+				cleaned=rgb_name(name)
+				list_color_names[cleaned]
+			end
 		end
+
 		extend Utils
 
 		attr_accessor :color, :mode

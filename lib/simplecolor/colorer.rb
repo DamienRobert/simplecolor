@@ -34,43 +34,51 @@ module SimpleColor
 			accu=[]
 			buffer=""
 			flush=lambda {r=accu.join(";"); accu=[]; r.empty? || r="\e["+r+"m"; buffer<<r} #Note: "\e"="\x1b"
-			args.each do |col|
-				if (scol=abbreviations[col])
-					# Array are special, in a non abbreviation they mean an rgb mode but for abbreviations it just combine several color attributes
-					buffer << color_attributes(*scol, mode: mode, color_mode: color_mode, abbreviations: {}, **rgb_parse_opts) #we erase abbreviations so :red = :red do not get an infinite loop
-					next
-				end
-				case col
-				when Proc
-					scol=col.call(buffer, accu)
-					buffer << color_attributes(*scol, mode: mode, color_mode: color_mode, abbreviations: abbreviations, **rgb_parse_opts)
-				when Symbol
-					raise WrongColor.new(col) unless colors.key?(col)
-					accu << colors[col]
-				when Integer #direct ansi code
-					accu << col.to_s
-				when Array
-					background=false
-					if col.first == :on
-						background=true; col.shift
+
+			parse=lambda do |*cols, abbrevs: abbreviations|
+				cols.each do |col|
+					if (scol=abbrevs[col])
+						# Array are special, in a non abbreviation they mean an rgb mode but for abbreviations it just combine several color attributes
+						parse.call(*scol, abbrevs: {}) #we erase abbreviations so :red = :red do not get an infinite loop
+						next
 					end
-					accu << RGB.new(col).ansi(convert: color_mode, background: background)
-				when COLOR_REGEXP
-					flush.call
-					buffer<<col
-				when String
-					truecol=/(?<truecol>(?:truecolor|true|t):)?/
-					on=/(?<on>on_)?/
-					col.match(/\A#{truecol}#{on}(?<rest>.*)\z/) do |m|
-						tcol=m[:truecol]; on=m[:on]; string=m[:rest]
-						lcolormode = tcol ? :truecolor : color_mode
-						accu << RGB.parse(string, **rgb_parse_opts).ansi(background: !!on, convert: lcolormode)
+					case col
+					when Proc
+						scol=col.call(buffer, accu)
+						parse.call(*scol)
+					when Symbol
+						if colors.key?(col)
+							accu << colors[col]
+						else
+							parse.call(col.to_s)
+						end
+					when Integer #direct ansi code
+						accu << col.to_s
+					when Array
+						background=false
+						if col.first == :on
+							background=true; col.shift
+						end
+						accu << RGB.new(col).ansi(convert: color_mode, background: background)
+					when COLOR_REGEXP
+						flush.call
+						buffer<<col
+					when String
+						truecol=/(?<truecol>(?:truecolor|true|t):)?/
+						on=/(?<on>on_)?/
+						col.match(/\A#{truecol}#{on}(?<rest>.*)\z/) do |m|
+							tcol=m[:truecol]; on=m[:on]; string=m[:rest]
+							lcolormode = tcol ? :truecolor : color_mode
+							accu << RGB.parse(string, **rgb_parse_opts).ansi(background: !!on, convert: lcolormode)
+						end
+					when nil # skip
+					else
+						raise WrongColor.new(col)
 					end
-				when nil # skip
-				else
-					raise WrongColor.new(col)
 				end
 			end
+
+			parse.call(*args)
 			flush.call
 
 			case mode

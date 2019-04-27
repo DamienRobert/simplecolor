@@ -63,8 +63,8 @@ module SimpleColor
 		extend Parsers
 
 		module Utils
-			def rgb_random(background: false)
-				(background ? [:on] : []) + (1..3).map { Random.rand(256) }
+			def rgb_random
+				RGB.new((1..3).map { Random.rand(256) })
 			end
 			
 			#c=16 + 36 × r + 6 × g + b
@@ -102,6 +102,9 @@ module SimpleColor
 			end
 
 			def find_color(name)
+				if name == "random"
+					return rgb_random
+				end
 				cleaned=rgb_name(name)
 				list_color_names[cleaned]
 			end

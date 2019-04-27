@@ -83,12 +83,19 @@ describe SimpleColor do
 		end
 	end
 
-	describe "Default abbreviations" do
-		it "Has a default :random abbreviation" do
+	describe "Random" do
+		it "Has a :random color" do
 			SimpleColor.color("foo", :random).must_match(/\e\[38;2;\d+;\d+;\d+mfoo\e\[0m/)
 		end
-		it "Has a default :on_random abbreviation" do
+		it "Has a :on_random color" do
 			SimpleColor.color("foo", :on_random).must_match(/\e\[48;2;\d+;\d+;\d+mfoo\e\[0m/)
+		end
+	end
+
+	describe "Abbreviations" do
+		it "Can specify abbreviations" do
+			SimpleColor.abbreviations[:important]=[:red, :bold]
+			SimpleColor.color("foo", :important).must_equal("\e[31;1mfoo\e[0m")
 		end
 	end
 
@@ -256,7 +263,7 @@ describe SimpleColor do
 		end
 
 		it "Raises when we pass an invalid color" do
-			proc { SimpleColor.color("foo", :garbage)}.must_raise SimpleColor::WrongColor
+			proc { SimpleColor.color("foo", SimpleColor)}.must_raise SimpleColor::WrongColor
 			proc { SimpleColor.color("foo", "nonexistingcolorname")}.must_raise SimpleColor::WrongRGBColor
 		end
 	end

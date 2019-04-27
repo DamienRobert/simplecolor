@@ -101,9 +101,7 @@ module SimpleColor
 	module Opts
 		extend self
 
-		@default_abbreviations={ random: proc { [RGB.rgb_random] },
-			on_random: proc { [RGB.rgb_random(background: true)]},
-		}
+		@default_abbreviations={}
 		@default_opts={mode: true, color_mode: :truecolor, abbreviations: @default_abbreviations}
 		class << self
 			attr_reader :default_shortcuts, :default_opts

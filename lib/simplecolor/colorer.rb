@@ -60,6 +60,8 @@ module SimpleColor
 							background=true; col.shift
 						end
 						accu << RGB.new(col).ansi(convert: color_mode, background: background)
+					when RGB
+						accu << col.ansi(convert: color_mode)
 					when COLOR_REGEXP
 						flush.call
 						buffer<<col

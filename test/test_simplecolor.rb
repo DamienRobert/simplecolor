@@ -2,13 +2,10 @@ require 'helper'
 require 'simplecolor'
 
 class TestSimpleColor < MiniTest::Test
-
 	def test_version
 		version = SimpleColor.const_get('VERSION')
-
 		assert(!version.empty?, 'should have a VERSION constant')
 	end
-
 end
 
 describe SimpleColor do
@@ -158,9 +155,7 @@ describe SimpleColor do
 			s.uncolor!
 			s.must_equal "red"
 		end
-
 	end
-
 
 	describe "It can be disabled" do
 		before do
@@ -257,7 +252,7 @@ describe SimpleColor do
 		end
 
 		it "Raises when we pass invalid rgb parameter" do
-			proc { SimpleColor.color("foo", "lavender", colormode:10)}.must_raise SimpleColor::WrongRGBParameter
+			proc { SimpleColor.color("foo", "lavender", color_mode:10)}.must_raise SimpleColor::WrongRGBParameter
 		end
 
 		it "Raises when we pass an invalid color" do

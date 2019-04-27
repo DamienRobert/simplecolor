@@ -101,10 +101,10 @@ module SimpleColor
 	module Opts
 		extend self
 
-		@default_shortcuts={ random: proc { [RGB.rgb_random] },
+		@default_abbreviations={ random: proc { [RGB.rgb_random] },
 			on_random: proc { [RGB.rgb_random(background: true)]},
 		}
-		@default_opts={mode: true, colormode: :truecolor, shortcuts: @default_shortcuts}
+		@default_opts={mode: true, color_mode: :truecolor, abbreviations: @default_abbreviations}
 		class << self
 			attr_reader :default_shortcuts, :default_opts
 		end
@@ -118,7 +118,11 @@ module SimpleColor
 		# :shell means that the color escape sequence will be quoted.
 		# This is meant to be used in the shell prompt, so that the escape
 		# sequence will not count in the length of the prompt.
-		{enabled: :mode, mode: :mode, color_mode: :colormode, color_names: :colornames, abbreviations: :shortcuts}.each do |i,k|
+		opts_access={enabled: :mode}
+		%i(mode color_mode color_names abbreviations).each do |opt|
+			opts_access[opt]=opt
+		end
+		opts_access.each do |i,k|
 			define_method(i) do
 				opts[k]
 			end

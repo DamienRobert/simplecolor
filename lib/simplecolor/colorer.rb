@@ -27,27 +27,26 @@ module SimpleColor
 		# - an integer (direct color code)
 		# - a color escape sequence
 		# - a String
-		def color_attributes(*args, mode: :text, colormode: :truecolor, shortcuts: {}, **rgb_parse_opts)
+		def color_attributes(*args, mode: :text, color_mode: :truecolor, abbreviations: {}, **rgb_parse_opts)
 			return "" if mode==:disabled or mode==false #early abort
-			shortcuts={} if shortcuts.nil?
+			abbreviations={} if abbreviations.nil?
 			colors=self.colors
 			accu=[]
 			buffer=""
 			flush=lambda {r=accu.join(";"); accu=[]; r.empty? || r="\e["+r+"m"; buffer<<r} #Note: "\e"="\x1b"
 			args.each do |col|
-				if shortcuts.key?(col)
-					scol=*shortcuts[col]
-					# Array are special, in a non shortcut they mean an rgb mode but for shortcuts it just combine several color attributes
-					buffer << color_attributes(*scol, mode: mode, colormode: colormode, shortcuts: {}) #we erase shortcuts so :red = :red do not get an infinite loop
+				if (scol=abbreviations[col])
+					# Array are special, in a non abbreviation they mean an rgb mode but for abbreviations it just combine several color attributes
+					buffer << color_attributes(*scol, mode: mode, color_mode: color_mode, abbreviations: {}, **rgb_parse_opts) #we erase abbreviations so :red = :red do not get an infinite loop
 					next
 				end
 				case col
 				when Proc
-					scol=*col.call(buffer, accu)
-					buffer << color_attributes(*scol, mode: mode, colormode: colormode, shortcuts: shortcuts)
+					scol=col.call(buffer, accu)
+					buffer << color_attributes(*scol, mode: mode, color_mode: color_mode, abbreviations: abbreviations, **rgb_parse_opts)
 				when Symbol
 					raise WrongColor.new(col) unless colors.key?(col)
-					accu<< colors[col]
+					accu << colors[col]
 				when Integer #direct ansi code
 					accu << col.to_s
 				when Array
@@ -55,7 +54,7 @@ module SimpleColor
 					if col.first == :on
 						background=true; col.shift
 					end
-					accu << RGB.new(col).ansi(convert: colormode, background: background)
+					accu << RGB.new(col).ansi(convert: color_mode, background: background)
 				when COLOR_REGEXP
 					flush.call
 					buffer<<col
@@ -64,7 +63,7 @@ module SimpleColor
 					on=/(?<on>on_)?/
 					col.match(/\A#{truecol}#{on}(?<rest>.*)\z/) do |m|
 						tcol=m[:truecol]; on=m[:on]; string=m[:rest]
-						tcol ? lcolormode=:truecolor : lcolormode=colormode
+						lcolormode = tcol ? :truecolor : color_mode
 						accu << RGB.parse(string, **rgb_parse_opts).ansi(background: !!on, convert: lcolormode)
 					end
 				when nil # skip

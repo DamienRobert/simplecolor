@@ -9,39 +9,8 @@ module SimpleColor
 	WrongRGBColor=Class.new(RGBError)
 	WrongRGBParameter=Class.new(RGBError)
 
-	# A list of color names for standard ansi colors, needed for 16/8 color fallback mode
-	# See https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
-	RGB_COLORS_ANSI = {
-		:black	 => [  0,		0,	 0],
-		:red		 => [205,		0,	 0],
-		:green	 => [  0, 205,	 0],
-		:yellow  => [205, 205,	 0],
-		:blue		 => [  0,		0, 238],
-		:magenta => [205,		0, 205],
-		:cyan		 => [  0, 205, 205],
-		:white	 => [229, 229, 229],
-		:gray => [229, 229, 229],
-	}.each { |_k, v| v.freeze }.freeze
-
-	# A list of color names for standard bright ansi colors, needed for 16 color fallback mode
-	# See https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
-	RGB_COLORS_ANSI_BRIGHT = {
-		:intense_black	 => [127, 127, 127],
-		:intense_red		 => [255,		0,	 0],
-		:intense_green	 => [  0, 255,	 0],
-		:intense_yellow  => [255, 255,	 0],
-		:intense_blue		 => [ 92,  92, 255],
-		:intense_magenta => [255,		0, 255],
-		:intense_cyan		 => [  0, 255, 255],
-		:intense_white	 => [255, 255, 255],
-		:intense_gray => [255, 255, 255],
-	}.each { |_k, v| v.freeze }.freeze
-
-	RGB_COLORS_ANSI_16 = RGB_COLORS_ANSI.merge(RGB_COLORS_ANSI_BRIGHT)
-
 	class RGB
-		GREY256=232
-		TRUECOLOR=0xFFFFFF
+		require 'simplecolor/rgb_constants'
 
 		module Parsers
 			# Creates RGB color from a HTML-like color definition string
@@ -144,7 +113,7 @@ module SimpleColor
 
 		private def color_mode(mode)
 			case mode
-			when true, :truecolor, TRUECOLOR
+			when true, :truecolor, TRUE_COLOR
 				mode=:truecolor
 			end
 			case mode
@@ -205,7 +174,7 @@ module SimpleColor
 		end
 
 		def nbcolors
-			return TRUECOLOR if @mode == :truecolor
+			return TRUE_COLOR if @mode == :truecolor
 			return @mode
 		end
 
@@ -242,7 +211,7 @@ module SimpleColor
 			when 256
 				return to_256 unless only_down and nbcolors < 256
 			when :truecolor
-				return to_truecolor unless only_down and nbcolors < TRUECOLOR
+				return to_truecolor unless only_down and nbcolors < TRUE_COLOR
 			end
 			self
 		end

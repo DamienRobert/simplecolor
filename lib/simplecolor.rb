@@ -26,6 +26,9 @@ module SimpleColor
 	# The Colorer module handle all color outputs
 	module Colorer
 		extend self
+		def colors
+			COLORS
+		end
 
 		# A color name can be:
 		# - an array of rgb data (truecolor)
@@ -48,6 +51,7 @@ module SimpleColor
 		def color_attributes(*args, mode: :text, colormode: :truecolor, shortcuts: {}, **rgb_parse_opts)
 			return "" if mode==:disabled or mode==false #early abort
 			shortcuts={} if shortcuts.nil?
+			colors=self.colors
 			accu=[]
 			buffer=""
 			flush=lambda {r=accu.join(";"); accu=[]; r.empty? || r="\e["+r+"m"; buffer<<r} #Note: "\e"="\x1b"
@@ -63,8 +67,8 @@ module SimpleColor
 					scol=*col.call(buffer, accu)
 					buffer << color_attributes(*scol, mode: mode, colormode: colormode, shortcuts: shortcuts)
 				when Symbol
-					raise WrongColor.new(col) unless COLORS.key?(col)
-					accu<<COLORS[col]
+					raise WrongColor.new(col) unless colors.key?(col)
+					accu<< colors[col]
 				when Integer #direct ansi code
 					accu << col.to_s
 				when Array
@@ -233,16 +237,16 @@ module SimpleColor
 		# eg: SimpleColor.attributes_from_colors(SimpleColor.color("foo", :red))
 		#			=> [:red, :reset]
 		def attributes_from_colors(s)
-			s.scan(/#{ANSICOLOR_REGEXP}/).flat_map do |a|
+			s.scan(Colorer.regexp(:ansi)).flat_map do |a|
 				next :reset if a=="\e[m" #alternative for reset
-				a[/\e\[(.*)m/,1].split(';').map {|c| COLORS.key(c.to_i)}
+				a[/\e\[(.*)m/,1].split(';').map {|c| Colorer.colors.key(c.to_i)}
 			end
 		end
 
 		#get the ansi sequences on s (assume the whole line is colored)
 		#returns left_ansi, right_ansi, string
 		def current_colors(s)
-			m=s.match(/^(#{COLORMATCH_REGEXP})(.*?)(#{COLORMATCH_REGEXP})$/)
+			m=s.match(/^(#{Colorer.regexp(:match)})(.*?)(#{Colorer.regexp(:match)})$/)
 			[m[1],m[3],m[2]]
 		rescue ArgumentError #rescue from "invalid byte sequence in UTF-8"
 			["","",s]
@@ -254,11 +258,11 @@ module SimpleColor
 		end
 
 		#split the line into characters and ANSII color sequences
-		def color_entities(l, color_regexp: COLOR_REGEXP)
+		def color_entities(l, color_regexp: Colorer.regexp(:color))
 			l.split(/(#{color_regexp})/).flat_map {|c| color?(c) ? [c] : c.split('') }
 		end
 		#same as above but split into strings
-		def color_strings(l, color_regexp: COLOR_REGEXP)
+		def color_strings(l, color_regexp: Colorer.regexp(:color))
 			u=l.split(/(#{color_regexp})/)
 			# if we start with an ANSI sequence, u is ["", ...], so we need to
 			# get rid of that ""

@@ -52,6 +52,9 @@ module SimpleColor
 	RGB_COLORS_ANSI_16 = RGB_COLORS_ANSI.merge(RGB_COLORS_ANSI_BRIGHT)
 
 	class RGB
+		GREY256=232
+		TRUECOLOR=0xFFFFFF
+
 		module Parsers
 			def rgb_name(name) #clean up name
 				name.gsub(/\s+/,'').downcase
@@ -79,7 +82,7 @@ module SimpleColor
 					if (m=col.match(/\A(?:rgb)?256[+:-]?(?<grey>gr[ae]y)?(?<red>\d+)(?:[+:-](?<green>\d+)[+:-](?<blue>\d+))?\z/))
 						grey=m[:grey]; red=m[:red].to_i; green=m[:green].to_i; blue=m[:blue].to_i
 						if grey
-							self.new(232+red, mode: 256)
+							self.new(GREY256+red, mode: 256)
 						elsif green and blue
 							self.new([red, green, blue], mode: 256)
 						else
@@ -108,6 +111,11 @@ module SimpleColor
 			def rgb_random(background: false)
 				(background ? [:on] : []) + (1..3).map { Random.rand(256) }
 			end
+			
+			#c=16 + 36 × r + 6 × g + b
+			def color256_to_rgb(c)
+				(c-16).digits(6)
+			end
 		end
 		extend Utils
 
@@ -115,7 +123,7 @@ module SimpleColor
 
 		private def color_mode(mode)
 			case mode
-			when true, :truecolor, 0xFFFFFF
+			when true, :truecolor, TRUECOLOR
 				mode=:truecolor
 			end
 			case mode
@@ -157,7 +165,7 @@ module SimpleColor
 					@color=16 + 36 * red.to_i + 6 * green.to_i + blue.to_i
 				when String, Symbol #for grey mode
 					if (m=rgb.to_s.match(/\Agr[ae]y(\d+)\z/))
-						@color=232+m[1].to_i
+						@color=GREY256+m[1].to_i
 					else
 						raise WrongRGBColor.new(rgb)
 					end
@@ -176,7 +184,7 @@ module SimpleColor
 		end
 
 		def nbcolors
-			return 0xFFFFFF if @mode == :truecolor
+			return TRUECOLOR if @mode == :truecolor
 			return @mode
 		end
 
@@ -213,7 +221,7 @@ module SimpleColor
 			when 256
 				to_256 unless only_down and nbcolors < 256
 			when :truecolor
-				to_truecolor unless only_down and nbcolors < 0xFFFFFF
+				to_truecolor unless only_down and nbcolors < TRUECOLOR
 			end
 		end
 
@@ -239,8 +247,15 @@ module SimpleColor
 				name=RGB_COLORS_ANSI_16.key(@color)
 				self.class.new(ANSI_COLORS_16[name])
 			when 256
-				to_16.to_truecolor
-				# self #todo
+				if @color < 16
+					to_16.to_truecolor
+				elsif @color < GREY256
+					red, green, blue=self.class.color256_to_rgb(@color)
+					self.class.new([red, green, blue].map {|c| (c * 256.0/7.0).round})
+				else
+					grey=@color-GREY256
+					self.class.new([(grey*256.0/24.0).round] *3)
+				end
 			else
 				self
 			end
@@ -267,7 +282,7 @@ module SimpleColor
 				end
 
 				col=if gray
-					232 + ((red.to_f + green.to_f + blue.to_f)/33).round
+					GREY256 + ((red.to_f + green.to_f + blue.to_f)/33).round
 				else # rgb
 					[16, *[red, green, blue].zip([36, 6, 1]).map{ |color, mod|
 						(6 * (color.to_f / 256)).to_i * mod

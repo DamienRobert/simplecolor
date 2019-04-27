@@ -103,11 +103,7 @@ module SimpleColor
 
 		@default_abbreviations={}
 		@default_colornames={}
-		color_names=lambda do |col|
-			cleaned=RGB.rgb_name(col)
-			@colornames[col]
-		end
-		@default_opts={mode: true, color_mode: :truecolor, abbreviations: @default_abbreviations, color_names: color_names}
+		@default_opts={mode: true, color_mode: :truecolor, abbreviations: @default_abbreviations}
 		class << self
 			attr_reader :default_opts, :default_colornames
 		end
@@ -121,8 +117,8 @@ module SimpleColor
 		# :shell means that the color escape sequence will be quoted.
 		# This is meant to be used in the shell prompt, so that the escape
 		# sequence will not count in the length of the prompt.
-		opts_access={enabled: :mode, color_names_method: color_names}
-		%i(mode color_mode color_names abbreviations).each do |opt|
+		opts_access={enabled: :mode}
+		%i(mode color_mode abbreviations).each do |opt|
 			opts_access[opt]=opt
 		end
 		opts_access.each do |i,k|

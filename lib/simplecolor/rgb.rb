@@ -81,11 +81,31 @@ module SimpleColor
 				end
 			end
 
-			def list_color_names
-				return @rgb_color_names if defined? @rgb_color_names
-				rgb_colors = File.dirname(__FILE__) + "/../../data/rgb_colors.json.gz"
-				# A list of color names, based on X11's rgb.txt
+			def custom_color_names
+				{
+				  "solarized_base03"	=> "#002b36",
+					"solarized_base02"	=> "#073642",
+					"solarized_base01"	=> "#586e75",
+					"solarized_base00"	=> "#657b83",
+					"solarized_base0"		=> "#839496",
+					"solarized_base1"		=> "#93a1a1",
+					"solarized_base2"		=> "#eee8d5",
+					"solarized_base3"		=> "#fdf6e3",
+					"solarized_yellow"	=> "#b58900",
+					"solarized_orange"	=> "#cb4b16",
+					"solarized_red"			=> "#dc322f",
+					"solarized_magenta" => "#d33682",
+					"solarized_violet"	=> "#6c71c4",
+					"solarized_blue"		=> "#268bd2",
+					"solarized_cyan"		=> "#2aa198",
+					"solarized_green"		=> "#859900",
+				}
+			end
 
+			def color_names
+				return @rgb_color_names if defined? @rgb_color_names
+				# A list of color names, based on X11's rgb.txt
+				rgb_colors = File.dirname(__FILE__) + "/../../data/rgb_colors.json.gz"
 				# Rewrite file:
 				# h={}; SimpleColor::RGB_COLORS.each do |k,v| h[SimpleColor::RGB.rgb_name(k)]=v end
 				# Pathname.new("data/rgb_colors.json").write(h.to_json)
@@ -94,10 +114,10 @@ module SimpleColor
 					# serialized_data.force_encoding Encoding::BINARY
 					@rgb_color_names = JSON.parse(serialized_data)
 				end
-				@rgb_color_names
+				@rgb_color_names.merge!(custom_color_names)
 			end
 
-			def rgb_name(name) #clean up name
+			def rgb_clean(name) #clean up name
 				name.gsub(/\s+/,'').downcase
 			end
 
@@ -105,8 +125,8 @@ module SimpleColor
 				if name == "random"
 					return rgb_random
 				end
-				cleaned=rgb_name(name)
-				list_color_names[cleaned]
+				cleaned=rgb_clean(name)
+				color_names[cleaned]
 			end
 		end
 

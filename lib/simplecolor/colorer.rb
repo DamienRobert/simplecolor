@@ -27,7 +27,7 @@ module SimpleColor
 		# - an integer (direct color code)
 		# - a color escape sequence
 		# - a String
-		def color_attributes(*args, mode: :text, color_mode: :truecolor, abbreviations: {}, **rgb_parse_opts)
+		def color_attributes(*args, mode: :text, color_mode: :truecolor, abbreviations: {}, rgb_class: RGB, **rgb_parse_opts)
 			return "" if mode==:disabled or mode==false #early abort
 			abbreviations={} if abbreviations.nil?
 			colors=self.colors
@@ -59,8 +59,8 @@ module SimpleColor
 						if col.first == :on
 							background=true; col.shift
 						end
-						accu << RGB.new(col).ansi(convert: color_mode, background: background)
-					when RGB
+						accu << rgb_class.new(col).ansi(convert: color_mode, background: background)
+					when rgb_class
 						accu << col.ansi(convert: color_mode)
 					when COLOR_REGEXP
 						flush.call
@@ -71,7 +71,7 @@ module SimpleColor
 						col.match(/\A#{truecol}#{on}(?<rest>.*)\z/) do |m|
 							tcol=m[:truecol]; on=m[:on]; string=m[:rest]
 							lcolormode = tcol ? :truecolor : color_mode
-							accu << RGB.parse(string, **rgb_parse_opts).ansi(background: !!on, convert: lcolormode)
+							accu << rgb_class.parse(string, **rgb_parse_opts).ansi(background: !!on, convert: lcolormode)
 						end
 					when nil # skip
 					else

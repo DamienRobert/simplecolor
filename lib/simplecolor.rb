@@ -102,9 +102,14 @@ module SimpleColor
 		extend self
 
 		@default_abbreviations={}
-		@default_opts={mode: true, color_mode: :truecolor, abbreviations: @default_abbreviations}
+		@default_colornames={}
+		color_names=lambda do |col|
+			cleaned=RGB.rgb_name(col)
+			@colornames[col]
+		end
+		@default_opts={mode: true, color_mode: :truecolor, abbreviations: @default_abbreviations, color_names: color_names}
 		class << self
-			attr_reader :default_shortcuts, :default_opts
+			attr_reader :default_opts, :default_colornames
 		end
 
 		attr_writer :opts
@@ -116,7 +121,7 @@ module SimpleColor
 		# :shell means that the color escape sequence will be quoted.
 		# This is meant to be used in the shell prompt, so that the escape
 		# sequence will not count in the length of the prompt.
-		opts_access={enabled: :mode}
+		opts_access={enabled: :mode, color_names_method: color_names}
 		%i(mode color_mode color_names abbreviations).each do |opt|
 			opts_access[opt]=opt
 		end
@@ -130,22 +135,22 @@ module SimpleColor
 		end
 
 		#ColorNames=RGB_COLORS.merge({
-		#	"solarized_base03" =>		"#002b36",
-		#	"solarized_base02" =>  "#073642",
-		#	"solarized_base01" =>  "#586e75",
-		#	"solarized_base00" =>  "#657b83",
-		#	"solarized_base0"  => "#839496",
-		#	"solarized_base1"  => "#93a1a1",
-		#	"solarized_base2"  => "#eee8d5",
-		#	"solarized_base3"  => "#fdf6e3",
-		#	"solarized_yellow" => "#b58900",
-		#	"solarized_orange" => "#cb4b16",
-		#	"solarized_red"		 => "#dc322f",
-		#	"solarized_magenta"=> "#d33682",
-		#	"solarized_violet" => "#6c71c4",
-		#	"solarized_blue"	 => "#268bd2",
-		#	"solarized_cyan"	 => "#2aa198",
-		#	"solarized_green"  => "#859900",
+		#	"solarized_base03"  => "#002b36",
+		#	"solarized_base02"  => "#073642",
+		#	"solarized_base01"  => "#586e75",
+		#	"solarized_base00"  => "#657b83",
+		#	"solarized_base0"   => "#839496",
+		#	"solarized_base1"   => "#93a1a1",
+		#	"solarized_base2"   => "#eee8d5",
+		#	"solarized_base3"   => "#fdf6e3",
+		#	"solarized_yellow"  => "#b58900",
+		#	"solarized_orange"  => "#cb4b16",
+		#	"solarized_red"     => "#dc322f",
+		#	"solarized_magenta" => "#d33682",
+		#	"solarized_violet"  => "#6c71c4",
+		#	"solarized_blue"    => "#268bd2",
+		#	"solarized_cyan"    => "#2aa198",
+		#	"solarized_green"   => "#859900",
 		#})
 	end
 

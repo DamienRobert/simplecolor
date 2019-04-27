@@ -96,7 +96,7 @@ module SimpleColor
 				"%{"+buffer+"%}"
 			when :disabled
 				"" # already handled above
-			when :enabled, true
+			when :text, :enabled, true
 				buffer
 			else
 				raise WrongParameter.new(mode)

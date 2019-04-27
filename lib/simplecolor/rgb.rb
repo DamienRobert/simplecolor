@@ -80,7 +80,7 @@ module SimpleColor
 					self.new(col, mode: true)
 				when String
 					if (m=col.match(/\A(?:rgb)?256[+:-]?(?<grey>gr[ae]y)?(?<red>\d+)(?:[+:-](?<green>\d+)[+:-](?<blue>\d+))?\z/))
-						grey=m[:grey]; red=m[:red].to_i; green=m[:green].to_i; blue=m[:blue].to_i
+						grey=m[:grey]; red=m[:red]&.to_i; green=m[:green]&.to_i; blue=m[:blue]&.to_i
 						if grey
 							self.new(GREY256+red, mode: 256)
 						elsif green and blue
@@ -90,7 +90,7 @@ module SimpleColor
 							self.new(red, mode: 256)
 						end
 					elsif (m=col.match(/\A(?:rgb[+:-]?)?(?<red>\d+)[+:-](?<green>\d+)[+:-](?<blue>\d+)\z/))
-						red=m[:red].to_i; green=m[:green].to_i; blue=m[:blue].to_i
+						red=m[:red]&.to_i; green=m[:green]&.to_i; blue=m[:blue]&.to_i
 						self.new([red, green, blue], mode: :truecolor)
 					elsif (m=col.match(/\A#?(?<hex_color>[[:xdigit:]]{3}{1,2})\z/)) # 3 or 6 hex chars
 						self.new(rgb_hex(m[:hex_color]), mode: :truecolor)
@@ -115,6 +115,15 @@ module SimpleColor
 			#c=16 + 36 × r + 6 × g + b
 			def color256_to_rgb(c)
 				(c-16).digits(6)
+			end
+
+			def rgb_values(c)
+				case c
+				when self
+					c.to_truecolor.color
+				else
+					self.parse(c).to_truecolor.color
+				end
 			end
 		end
 		extend Utils
@@ -200,7 +209,7 @@ module SimpleColor
 		#		ESC[ 38;2;<r>;<g>;<b> m Select RGB foreground color
 		#		ESC[ 48;2;<r>;<g>;<b> m Select RGB background color
 		def ansi(background: false, convert: nil)
-			convert(convert).ansi(background: background, convert: nil) if convert
+			return self.convert(convert, only_down: true).ansi(background: background, convert: nil) if convert
 			case @mode
 			when 8, 16
 				"#{background ? 4 : 3}#{@color}"
@@ -212,22 +221,23 @@ module SimpleColor
 			end
 		end
 
-		def convert(mode, only_down: true)
+		def convert(mode, only_down: false)
 			case color_mode(mode)
 			when 8
-				to_8
+				return to_8
 			when 16
-				to_16 unless only_down and nbcolors < 16
+				return to_16 unless only_down and nbcolors < 16
 			when 256
-				to_256 unless only_down and nbcolors < 256
+				return to_256 unless only_down and nbcolors < 256
 			when :truecolor
-				to_truecolor unless only_down and nbcolors < TRUECOLOR
+				return to_truecolor unless only_down and nbcolors < TRUECOLOR
 			end
+			self
 		end
 
 		def rgb_color_distance(rgb2)
 			if truecolor?
-				@color.zip(rgb2.to_truecolor).inject(0){ |acc, (cur1, cur2)| acc + (cur1 - cur2)**2 }
+				@color.zip(self.class.rgb_values(rgb2)).inject(0){ |acc, (cur1, cur2)| acc + (cur1 - cur2)**2 }
 			else
 				to_truecolor.rgb_color_distance(rgb2)
 			end

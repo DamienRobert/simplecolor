@@ -13,7 +13,7 @@ end
 
 describe SimpleColor do
 	after do #restore default options
-		SimpleColor.opts=SimpleColor::Helpers::DefaultOpts.clone
+		SimpleColor.opts=nil
 	end
 
 	it "Can be used directly" do
@@ -70,7 +70,7 @@ describe SimpleColor do
 	end
 
 	it "Has default options" do
-		SimpleColor.opts.must_equal(SimpleColor::Helpers::DefaultOpts)
+		SimpleColor.opts.must_equal(SimpleColor::Opts.default_opts)
 	end
 
 	describe "Abbreviations" do
@@ -219,8 +219,8 @@ describe SimpleColor do
 
 	describe "It can use a different color module" do
 		module SimpleColor2
+			extend SimpleColor
 		end
-		SimpleColor.color_module(SimpleColor2)
 
 		it "Can color too" do
 			SimpleColor2.color("red", :red).must_equal "\e[31mred\e[0m"
@@ -238,39 +238,16 @@ describe SimpleColor do
 			SimpleColor2.color("red", :red).must_equal "red"
 			SimpleColor2.enabled=true
 		end
-	end
 
-	describe "It can use a different color module via inclusion" do
-		module SimpleColor3
-			extend SimpleColor.color_module
-		end
+		it "Setting a different color module copy the defaults opts and not the current opts" do
 
-		it "Can color too" do
-			SimpleColor3.color("red", :red).must_equal "\e[31mred\e[0m"
-		end
-
-		it "In this case can't change :enabled" do
-			SimpleColor3.respond_to?(:enabled).must_equal false
-		end
-	end
-
-	describe "Setting a different color module copy the defaults opts" do
-		module SimpleColor4
-		end
-		old_opts=SimpleColor.opts
-		SimpleColor.opts={mode: false, colormode: 16}
-		SimpleColor.color_module(SimpleColor4)
-		SimpleColor.opts=old_opts
-
-		it "Has the same defaults as when created" do
-			SimpleColor4.opts.must_equal({mode: false, colormode: 16})
-		end
-
-		it "Changing the opts afterwards do not affect it" do
-			SimpleColor4.enabled=true
-			SimpleColor4.opts.must_equal({mode: true, colormode: 16})
-			SimpleColor.opts.must_equal(SimpleColor::Helpers::DefaultOpts)
-			SimpleColor4.enabled=false
+			default_opts=SimpleColor.opts
+			SimpleColor.opts={mode: false, colormode: 16}
+			module SimpleColor3
+				extend SimpleColor
+			end
+			SimpleColor.opts=default_opts
+			SimpleColor3.opts.must_equal default_opts
 		end
 	end
 

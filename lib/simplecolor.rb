@@ -16,11 +16,11 @@ require 'simplecolor/colors'
 #after SimpleColor.mix_in_string, one can do
 #`"blue".color(:blue,:bold)`
 module SimpleColor
-	extend self
 	SimpleColorError=Class.new(StandardError)
 	ColorerError=Class.new(SimpleColorError)
 	WrongColor=Class.new(ColorerError)
 	WrongParameter=Class.new(ColorerError)
+
 	require 'simplecolor/rgb'
 
 	# The Colorer module handle all color outputs
@@ -271,11 +271,35 @@ module SimpleColor
 		end
 	end
 
-	module Helpers
+	module Opts
 		extend self
-		Shortcuts={ random: proc { [RGB.rgb_random] },
+
+		@default_shortcuts={ random: proc { [RGB.rgb_random] },
 			on_random: proc { [RGB.rgb_random(background: true)]},
 		}
+		@default_opts={mode: true, colormode: :truecolor, shortcuts: @default_shortcuts}
+		class << self
+			attr_reader :default_shortcuts, :default_opts
+		end
+
+		attr_writer :opts
+		def opts
+			@opts ||= Opts.default_opts.clone
+		end
+
+		# enabled can be set to true, false, or :shell
+		# :shell means that the color escape sequence will be quoted.
+		# This is meant to be used in the shell prompt, so that the escape
+		# sequence will not count in the length of the prompt.
+		{enabled: :mode, mode: :mode, color_mode: :colormode, color_names: :colornames, abbreviations: :shortcuts}.each do |i,k|
+			define_method(i) do
+				opts[k]
+			end
+			define_method("#{i}=".to_sym) do |v|
+				opts[k]=v
+			end
+		end
+
 		#ColorNames=RGB_COLORS.merge({
 		#	"solarized_base03" =>		"#002b36",
 		#	"solarized_base02" =>  "#073642",
@@ -294,56 +318,39 @@ module SimpleColor
 		#	"solarized_cyan"	 => "#2aa198",
 		#	"solarized_green"  => "#859900",
 		#})
-		DefaultOpts={mode: true, colormode: :truecolor, shortcuts: Shortcuts}
+	end
+
+	module Mixin
+		def self.define_color_methods(klass, *methods, opts_from: nil, color_module: ColorWrapper)
+			methods=color_module.instance_methods if methods.empty?
+			methods.each do |m|
+				klass.define_method m do |*args, **l_opts, &b|
+					opts= opts_from ? opts_from.opts : self.opts
+					opts=opts.merge(l_opts)
+					color_module.instance_method(m).bind(self).call(*args, **opts, &b)
+				end
+			end
+		end
+
+		def mixin(*methods)
+			klass=self
+			Module.new do
+				Mixin.define_color_methods(self, *methods, opts_from: klass)
+			end
+		end
 
 		def mix_in(klass)
-			klass.send :include, SimpleColor
+			klass.send :include, mixin
 		end
 		def mix_in_string
 			mix_in(String)
 		end
-
-		def color_module(mod=nil)
-			mod=Module.new if mod.nil?
-
-			class << mod
-				attr_accessor :opts
-				{enabled: :mode, mode: :mode, color_mode: :colormode, color_names: :colornames, abbreviations: :shortcuts}.each do |i,k|
-					define_method(i) do
-						opts[k]
-					end
-					define_method("#{i}=".to_sym) do |v|
-						opts[k]=v
-					end
-				end
-			end
-			#copy caller's options
-			dopts= respond_to?(:opts) ? opts : DefaultOpts
-			# mod.opts=Marshal.load(Marshal.dump(dopts)) #deep clone?
-			mod.opts=dopts.clone
-
-			coloring=Module.new do
-				# enabled can be set to true, false, or :shell
-				# :shell means that the color escape sequence will be quoted.
-				# This is meant to be used in the shell prompt, so that the escape
-				# sequence will not count in the length of the prompt.
-				include ColorWrapper
-
-				ColorWrapper.instance_methods.each do |m|
-					define_method m do |*args, **opts, &b|
-						opts=mod.opts.merge(opts)
-						super(*args, **opts, &b)
-					end
-				end
-			end
-			mod.include(coloring)
-			mod.extend(coloring)
-			# mod.extend(Helpers)
-			mod
-		end
 	end
 
-	extend Utilities
-	extend Helpers
-	Helpers.color_module(self)
+	include Utilities
+	include Opts
+	include Mixin
+	extend self
+
+	Mixin.define_color_methods(self)
 end

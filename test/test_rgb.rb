@@ -18,7 +18,7 @@ end
 
 describe SimpleColor do
 	after do #restore default options
-		SimpleColor.opts=SimpleColor::Helpers::DefaultOpts.clone
+		SimpleColor.opts=nil
 	end
 
 	it "Can parse a true color name" do

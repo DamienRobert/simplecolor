@@ -82,7 +82,7 @@ module SimpleColor
 			end
 
 			def list_color_names
-				return @rgb_color_names if @rgb_color_names
+				return @rgb_color_names if defined? @rgb_color_names
 				rgb_colors = File.dirname(__FILE__) + "/../../data/rgb_colors.json.gz"
 				# A list of color names, based on X11's rgb.txt
 
@@ -245,7 +245,7 @@ module SimpleColor
 					self.class.new([red, green, blue].map {|c| (c * 256.0/7.0).round})
 				else
 					grey=@color-GREY256
-					self.class.new([(grey*256.0/24.0).round] *3)
+					self.class.new([(grey*256.0/24.0).round]*3)
 				end
 			else
 				self

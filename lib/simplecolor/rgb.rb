@@ -84,7 +84,7 @@ module SimpleColor
 
 		extend Utils
 
-		attr_accessor :color, :mode
+		attr_accessor :color, :mode, :background
 
 		private def color_mode(mode)
 			case mode
@@ -100,7 +100,7 @@ module SimpleColor
 			end
 		end
 
-		def initialize(*rgb, mode: :truecolor)
+		def initialize(*rgb, mode: :truecolor, background: false)
 			raise WrongRGBColor.new(rgb) if rgb.empty?
 			rgb=rgb.first if rgb.length==1
 			raise WrongRGBColor.new(rgb) if rgb.nil?
@@ -108,6 +108,7 @@ module SimpleColor
 			@init=rgb
 			@color=rgb #should be an array for truecolor, a number otherwise
 			@mode=color_mode(mode)
+			@background=!!background
 			
 			case @mode
 			when :truecolor
@@ -174,7 +175,7 @@ module SimpleColor
 		#For true colors:
 		#		ESC[ 38;2;<r>;<g>;<b> m Select RGB foreground color
 		#		ESC[ 48;2;<r>;<g>;<b> m Select RGB background color
-		def ansi(background: false, convert: nil)
+		def ansi(background: @background, convert: nil)
 			return self.convert(convert, only_down: true).ansi(background: background, convert: nil) if convert
 			case @mode
 			when 8, 16

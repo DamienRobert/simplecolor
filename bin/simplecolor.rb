@@ -143,6 +143,39 @@ def showcase
 			puts SimpleColor.fill("Solarized color base#{cin} on base0#{on}").color("solarized_base#{cin}", "on_solarized_base0#{on}")
 		end
 	end
+
+	puts
+	cube= ->(start, to_end) do
+		print "Cube #{start.join} to #{to_end.join}: "
+		direction=(0..2).map {|i| to_end[i]-start[i]}
+		(0..255).each do |v|
+			rgb=(0..2).map {|i| start[i]*255 + v*direction[i]}
+			print SimpleColor.color(empty, SimpleColor::RGB.new(rgb, background: true))
+		end
+		puts
+	end
+	cube[[0,0,0],[1,0,0]]
+	cube[[0,0,0],[0,1,0]]
+	cube[[0,0,0],[0,0,1]]
+	cube[[0,0,0],[0,1,1]]
+	cube[[0,0,0],[1,0,1]]
+	cube[[0,0,0],[1,1,0]]
+
+	cube[[1,0,0],[1,1,0]]
+	cube[[1,0,0],[1,0,1]]
+	cube[[1,0,0],[1,1,1]]
+
+	cube[[0,1,0],[1,1,0]]
+	cube[[0,1,0],[0,1,1]]
+	cube[[0,1,0],[1,1,1]]
+
+	cube[[0,0,1],[1,0,1]]
+	cube[[0,0,1],[0,1,1]]
+	cube[[0,0,1],[1,1,1]]
+
+	cube[[0,1,1],[1,1,1]]
+	cube[[1,0,1],[1,1,1]]
+	cube[[1,1,0],[1,1,1]]
 end
 
 optparse = OptionParser.new do |opt|

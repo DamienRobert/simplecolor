@@ -1,5 +1,6 @@
 require 'json'
 require "zlib"
+require 'simplecolor/rgb_colors'
 
 # rgb color conversion
 # taken from the paint gem, all copyright belong to its author
@@ -10,7 +11,6 @@ module SimpleColor
 	WrongRGBParameter=Class.new(RGBError)
 
 	class RGB
-		require 'simplecolor/rgb_constants'
 
 		module Parsers
 			# Creates RGB color from a HTML-like color definition string
@@ -79,37 +79,6 @@ module SimpleColor
 				else
 					self.parse(c).to_truecolor.color
 				end
-			end
-
-			def custom_color_names
-				COLOR_NAMES
-			end
-
-			def color_names
-				return @rgb_color_names if defined? @rgb_color_names
-				# A list of color names, based on X11's rgb.txt
-				rgb_colors = File.dirname(__FILE__) + "/../../data/rgb_colors.json.gz"
-				# Rewrite file:
-				# h={}; SimpleColor::RGB_COLORS.each do |k,v| h[SimpleColor::RGB.rgb_name(k)]=v end
-				# Pathname.new("data/rgb_colors.json").write(h.to_json)
-				File.open(rgb_colors, "rb") do |file|
-					serialized_data = Zlib::GzipReader.new(file).read
-					# serialized_data.force_encoding Encoding::BINARY
-					@rgb_color_names = JSON.parse(serialized_data)
-				end
-				@rgb_color_names.merge!(custom_color_names)
-			end
-
-			def rgb_clean(name) #clean up name
-				name.gsub(/\s+/,'').downcase
-			end
-
-			def find_color(name)
-				if name == "random"
-					return rgb_random
-				end
-				cleaned=rgb_clean(name)
-				color_names[cleaned]
 			end
 		end
 

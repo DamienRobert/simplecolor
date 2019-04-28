@@ -108,6 +108,10 @@ module SimpleColor
 			r+="\n" if s.end_with?("\n")
 			r
 		end
+
+		def clear
+			color(:clear)
+		end
 	end
 
 	module Opts

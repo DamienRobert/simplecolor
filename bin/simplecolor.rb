@@ -5,7 +5,7 @@ require 'optparse'
 
 def showcase
 	empty="  "
-	lorem="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.".split(" ")
+	lorem="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 
 	puts "* 16 colors:"
 	print "8 colors: "
@@ -111,6 +111,16 @@ def showcase
 	puts
 	puts "* Truecolor:"
 	puts SimpleColor.color(SimpleColor.fill("Lemon Chiffon on Lavender"), "Lemon Chiffon", "on_Lavender")
+	puts
+
+	puts "- Random color:"
+	lorem.each_char {|c| print SimpleColor.color(:random)+c}
+	print SimpleColor.clear
+	puts
+	puts "- Random color on random background:"
+	lorem.each_char {|c| print SimpleColor.color(:random, :on_random)+c}
+	print SimpleColor.clear
+	puts
 
 	puts
 	print "Solarized on light background: ".color("solarized_base00", "on_solarized_base3")

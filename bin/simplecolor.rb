@@ -176,6 +176,18 @@ def showcase
 	cube[[0,1,1],[1,1,1]]
 	cube[[1,0,1],[1,1,1]]
 	cube[[1,1,0],[1,1,1]]
+
+	puts "* Effects"
+	effects=SimpleColor::Colorer::ANSI_EFFECTS
+	effects.values.uniq.each do |v|
+		eff=effects.each_key.map { |k| effects[k]==v ? k : nil }.compact
+		before_effect=eff.find {|e| e=~/_off/}&.to_s&.sub('_off','')&.to_sym
+		if before_effect
+			puts "- #{eff.join('/')}: " + "lorem".color(before_effect)+ " ipsum".color(v)
+		else
+			puts "- #{eff.join('/')}: " + "lorem ipsum".color(v)
+		end
+	end
 end
 
 optparse = OptionParser.new do |opt|

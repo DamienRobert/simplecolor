@@ -85,8 +85,18 @@ module SimpleColor
 				end
 			end
 		end
-
 		extend Utils
+
+		module RGB16
+			def rgb_colors16
+				RGB_COLORS_ANSI_16
+			end
+			def rgb_colors8
+				RGB_COLORS_ANSI
+			end
+		end
+		extend RGB16
+		extend RGB16
 
 		attr_accessor :color, :mode, :background
 
@@ -209,7 +219,7 @@ module SimpleColor
 		def to_truecolor
 			case @mode
 			when 8, 16
-				name=RGB_COLORS_ANSI_16.key(@color)
+				name=self.class.rgb_colors16
 				self.class.new(ANSI_COLORS_16[name])
 			when 256
 				if @color < 16
@@ -259,16 +269,18 @@ module SimpleColor
 		end
 
 		def to_8
-			color_pool = RGB_COLORS_ANSI.values
+			rgb8=self.class.rgb_colors8
+			color_pool = rgb8.values
 			closest=rgb_to_pool(color_pool)
-			name=RGB_COLORS_ANSI.key(closest)
+			name=rgb8.key(closest)
 			self.class.new(ANSI_COLORS_16[name], mode: 8)
 		end
 
 		def to_16
-			color_pool = RGB_COLORS_ANSI_16.values
+			rgb16=self.class.rgb_colors16
+			color_pool = rgb16.values
 			closest=rgb_to_pool(color_pool)
-			name=RGB_COLORS_ANSI_16.key(closest)
+			name=rgb16.key(closest)
 			self.class.new(ANSI_COLORS_16[name], mode: 16)
 		end
 

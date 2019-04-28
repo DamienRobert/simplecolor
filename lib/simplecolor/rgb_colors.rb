@@ -24,6 +24,7 @@ module SimpleColor
 
 		# A list of color names for standard ansi colors, needed for 16/8 color fallback mode
 		# See https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+		# These are the xterm color palette
 		RGB_COLORS_ANSI = {
 			:black	 => [  0,		0,	 0],
 			:red		 => [205,		0,	 0],
@@ -36,8 +37,6 @@ module SimpleColor
 			:gray => [229, 229, 229],
 		}.each { |_k, v| v.freeze }.freeze
 
-		# A list of color names for standard bright ansi colors, needed for 16 color fallback mode
-		# See https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
 		RGB_COLORS_ANSI_BRIGHT = {
 			:intense_black	 => [127, 127, 127],
 			:intense_red		 => [255,		0,	 0],

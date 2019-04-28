@@ -73,7 +73,9 @@ module SimpleColor
 			
 			#c=16 + 36 × r + 6 × g + b
 			def color256_to_rgb(c)
-				(c-16).digits(6)
+				bgr=(c-16).digits(6)
+				bgr+=[0]*(3-rgb.length)
+				bgr.reverse
 			end
 
 			def rgb_values(c)
@@ -219,8 +221,9 @@ module SimpleColor
 		def to_truecolor
 			case @mode
 			when 8, 16
-				name=self.class.rgb_colors16
-				self.class.new(ANSI_COLORS_16[name])
+				name=ANSI_COLORS_16.key(@color)
+				rgb=self.class.rgb_colors16[name]
+				self.class.new(rgb)
 			when 256
 				if @color < 16
 					to_16.to_truecolor

@@ -128,7 +128,7 @@ module SimpleColor
 
 		# Returns a colored version of the string (modified in place),
 		# according to attributes
-		def colorer(s,*attributes,**kwds)
+		def colorer(s,*attributes, **kwds)
 			if s.nil?
 				color_attributes(*attributes,**kwds)
 			elsif s.empty?

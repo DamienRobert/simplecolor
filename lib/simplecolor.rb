@@ -96,6 +96,18 @@ module SimpleColor
 			u.shift if u.first == ""
 			u
 		end
+
+		def fill(s, columns:ENV['COLUMNS']&.to_i || 80)
+			r=s.each_line.map do |l|
+				l=l.chomp
+				length=uncolor(l).length
+				to_fill=columns - (length % columns)
+				to_fill = 0 if to_fill == columns
+				l+" "*to_fill
+			end.join("\n")
+			r+="\n" if s.end_with?("\n")
+			r
+		end
 	end
 
 	module Opts

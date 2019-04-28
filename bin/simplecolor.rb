@@ -110,11 +110,28 @@ def showcase
 
 	puts
 	puts "* Truecolor:"
-	puts SimpleColor.color("Lemon Chiffon on Lavender", "Lemon Chiffon", "on_Lavender")
+	puts SimpleColor.color(SimpleColor.fill("Lemon Chiffon on Lavender"), "Lemon Chiffon", "on_Lavender")
 
-	print "Solarized on light background".color("solarized_base00", "on_solarized_base3")
+	puts
+	print "Solarized on light background: ".color("solarized_base00", "on_solarized_base3")
 	%w(yellow orange red magenta violet blue cyan green).each do |col|
-		print col.color("solarized_#{col}", "on_solarized_base3")
+		print "#{col} ".color("solarized_#{col}", "on_solarized_base3")
+	end
+	puts
+	print "Solarized on dark background: ".color("solarized_base0", "on_solarized_base03")
+	%w(yellow orange red magenta violet blue cyan green).each do |col|
+		print "#{col} ".color("solarized_#{col}", "on_solarized_base03")
+	end
+	puts
+	[3, 2, 1, 0].each do |on|
+		(0..3).each do |cin|
+			puts SimpleColor.fill("Solarized color base0#{cin} on base#{on}").color("solarized_base0#{cin}", "on_solarized_base#{on}")
+		end
+	end
+	[3, 2, 1, 0].each do |on|
+		(0..3).each do |cin|
+			puts SimpleColor.fill("Solarized color base#{cin} on base0#{on}").color("solarized_base#{cin}", "on_solarized_base0#{on}")
+		end
 	end
 end
 

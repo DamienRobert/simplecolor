@@ -153,13 +153,23 @@ module SimpleColor
 			return @mode
 		end
 
+		def to_hex
+			r,g,b=rgb
+			hexa = ->(c) {h=c.to_s(16).upcase; h.length == 1 ? "0#{h}" : h}
+			"\##{hexa[r]}#{hexa[g]}#{hexa[b]}"
+		end
+
+		def rgb
+			to_truecolor.color
+		end
+
 		# For RGB 256 colors,
 		# Foreground = "\e[38;5;#{fg}m", Background = "\e[48;5;#{bg}m"
 		# where the color code is
 		# 0-	7:	standard colors (as in ESC [ 30–37 m)
 		# 8- 15:	high intensity colors (as in ESC [ 90–97 m)
 		# 16-231:  6 × 6 × 6 cube (216 colors): 16 + 36 × r + 6 × g + b (0 ≤ r, g, b ≤ 5)
-		#232-255:  grayscale from black to white in 24 steps
+		# 232-255:  grayscale from black to white in 24 steps
 
 		#For true colors:
 		#		ESC[ 38;2;<r>;<g>;<b> m Select RGB foreground color
@@ -189,22 +199,6 @@ module SimpleColor
 				return to_truecolor unless only_down and nbcolors < TRUE_COLOR
 			end
 			self
-		end
-
-		def rgb_color_distance(rgb2)
-			if truecolor?
-				@color.zip(self.class.rgb_values(rgb2)).inject(0){ |acc, (cur1, cur2)| acc + (cur1 - cur2)**2 }
-			else
-				to_truecolor.rgb_color_distance(rgb2)
-			end
-		end
-
-		def rgb_to_pool(color_pool)
-			if truecolor?
-				color_pool.min_by{ |col| rgb_color_distance(col) }
-			else
-				to_truecolor.rgb_to_pool(color_pool)
-			end
 		end
 
 		def to_truecolor
@@ -271,6 +265,22 @@ module SimpleColor
 			closest=rgb_to_pool(color_pool)
 			name=RGB_COLORS_ANSI_16.key(closest)
 			self.class.new(ANSI_COLORS_16[name], mode: 16)
+		end
+
+		def rgb_color_distance(rgb2)
+			if truecolor?
+				@color.zip(self.class.rgb_values(rgb2)).inject(0){ |acc, (cur1, cur2)| acc + (cur1 - cur2)**2 }
+			else
+				to_truecolor.rgb_color_distance(rgb2)
+			end
+		end
+
+		def rgb_to_pool(color_pool)
+			if truecolor?
+				color_pool.min_by{ |col| rgb_color_distance(col) }
+			else
+				to_truecolor.rgb_to_pool(color_pool)
+			end
 		end
 	end
 end

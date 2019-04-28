@@ -81,7 +81,7 @@ module SimpleColor
 				# A list of color names, based on X11's rgb.txt
 				rgb_colors = File.dirname(__FILE__) + "/../../data/rgb_colors.json.gz"
 				# Rewrite file:
-				# h={}; SimpleColor::RGB_COLORS.each do |k,v| h[SimpleColor::RGB.rgb_name(k)]=v end
+				# h={}; rgb.each do |k,v| h[SimpleColor::RGB.rgb_clean(k)]=v end
 				# Pathname.new("data/rgb_colors.json").write(h.to_json)
 				File.open(rgb_colors, "rb") do |file|
 					serialized_data = Zlib::GzipReader.new(file).read
@@ -92,7 +92,7 @@ module SimpleColor
 			end
 
 			def rgb_clean(name) #clean up name
-				name.gsub(/\s+/,'').downcase
+				name.gsub(/\s+/,'').downcase.sub('gray','grey')
 			end
 
 			def find_color(name)

@@ -25,38 +25,42 @@ module SimpleColor
 				end
 			end
 
-			def parse(col, color_names: proc {|c| self.find_color(c)})
+			def parse(col, color_names: proc {|c| find_color(c)})
 				case col
 				when self
-					col
+					return col
+				when Proc
+					scol=col.call(self)
+					return parse(scol, color_names: color_names)
 				when Symbol
-					raise WrongRGBColor.new(col) unless ANSI_COLORS_16.key?(col)
-					self.new(col, mode: 16)
+					if ANSI_COLORS_16.key?(col)
+						return self.new(col, mode: 16)
+					end
 				when Array
-					self.new(col, mode: true)
+					return self.new(col, mode: true)
 				when String
 					if (m=col.match(/\A(?:rgb)?256[+:-]?(?<grey>gr[ae]y)?(?<red>\d+)(?:[+:-](?<green>\d+)[+:-](?<blue>\d+))?\z/))
 						grey=m[:grey]; red=m[:red]&.to_i; green=m[:green]&.to_i; blue=m[:blue]&.to_i
 						if grey
-							self.new(GREY256+red, mode: 256)
+							return self.new(GREY256+red, mode: 256)
 						elsif green and blue
-							self.new([red, green, blue], mode: 256)
+							return self.new([red, green, blue], mode: 256)
 						else
 							raise WrongRGBColor.new(col) if green
-							self.new(red, mode: 256)
+							return self.new(red, mode: 256)
 						end
 					elsif (m=col.match(/\A(?:rgb[+:-]?)?(?<red>\d+)[+:-](?<green>\d+)[+:-](?<blue>\d+)\z/))
 						red=m[:red]&.to_i; green=m[:green]&.to_i; blue=m[:blue]&.to_i
-						self.new([red, green, blue], mode: :truecolor)
+						return self.new([red, green, blue], mode: :truecolor)
 					elsif (m=col.match(/\A#?(?<hex_color>[[:xdigit:]]{3}{1,2})\z/)) # 3 or 6 hex chars
-						self.new(rgb_hex(m[:hex_color]), mode: :truecolor)
-					else
-						if color_names && (c=color_names[col])
-							self.parse(c, color_names: nil)
-						else
-							raise WrongRGBColor.new(col)
-						end
+						return self.new(rgb_hex(m[:hex_color]), mode: :truecolor)
 					end
+				end
+				if color_names && (c=color_names[col])
+					return self.parse(c, color_names: nil)
+				else
+					# fallback to parsing col.to_s?
+					raise WrongRGBColor.new(col)
 				end
 			end
 		end

@@ -53,6 +53,7 @@ module SimpleColor
 		RGB_COLORS_ANSI_16 = RGB_COLORS_ANSI.merge(RGB_COLORS_ANSI_BRIGHT)
 
 		COLOR_NAMES={
+			:random => proc { rgb_random },
 			"solarized_base03"	=> "#002b36",
 			"solarized_base02"	=> "#073642",
 			"solarized_base01"	=> "#586e75",
@@ -96,10 +97,7 @@ module SimpleColor
 			end
 
 			def find_color(name)
-				if name == "random"
-					return rgb_random
-				end
-				cleaned=rgb_clean(name)
+				cleaned=name.is_a?(String) ? rgb_clean(name) : name
 				color_names[cleaned]
 			end
 		end

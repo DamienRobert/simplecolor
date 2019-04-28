@@ -35,6 +35,18 @@ module SimpleColor
 			buffer=""
 			flush=lambda {r=accu.join(";"); accu=[]; r.empty? || r="\e["+r+"m"; buffer<<r} #Note: "\e"="\x1b"
 
+			parse_rgb=lambda do |s|
+				symbol=s.is_a?(Symbol)
+				truecol=/(?<truecol>(?:truecolor|true|t):)?/
+				on=/(?<on>on_)?/
+				s.match(/\A#{truecol}#{on}(?<rest>.*)\z/) do |m|
+					tcol=m[:truecol]; on=m[:on]; string=m[:rest]
+					lcolormode = tcol ? :truecolor : color_mode
+					string=string.to_sym if symbol
+					accu << rgb_class.parse(string, **rgb_parse_opts).ansi(background: !!on, convert: lcolormode)
+				end
+			end
+
 			parse=lambda do |*cols, abbrevs: abbreviations|
 				cols.each do |col|
 					if (scol=abbrevs[col])
@@ -47,10 +59,10 @@ module SimpleColor
 						scol=col.call(buffer, accu)
 						parse.call(*scol)
 					when Symbol
-						if colors.key?(col)
+						if colors.key?(col) #ANSI effects
 							accu << colors[col]
 						else
-							parse.call(col.to_s)
+							parse_rgb.call(col)
 						end
 					when Integer #direct ansi code
 						accu << col.to_s
@@ -66,13 +78,7 @@ module SimpleColor
 						flush.call
 						buffer<<col
 					when String
-						truecol=/(?<truecol>(?:truecolor|true|t):)?/
-						on=/(?<on>on_)?/
-						col.match(/\A#{truecol}#{on}(?<rest>.*)\z/) do |m|
-							tcol=m[:truecol]; on=m[:on]; string=m[:rest]
-							lcolormode = tcol ? :truecolor : color_mode
-							accu << rgb_class.parse(string, **rgb_parse_opts).ansi(background: !!on, convert: lcolormode)
-						end
+						parse_rgb.call(col)
 					when nil # skip
 					else
 						raise WrongColor.new(col)

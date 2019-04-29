@@ -275,4 +275,48 @@ describe SimpleColor do
 			proc { SimpleColor.color("foo", "nonexistingcolorname")}.must_raise SimpleColor::WrongRGBColor
 		end
 	end
+
+	describe "Chain colors" do
+		it "Can chain global colors" do
+			r=SimpleColor["red", :red]
+			SimpleColor.color(r, :blue).must_equal "\e[31m\e[34mred\e[0m"
+		end
+
+		it "Can keep global colors" do
+			r=SimpleColor["red", :red]
+			SimpleColor.color(r, :blue, global_color: :keep).must_equal SimpleColor["red", :red]
+		end
+
+		it "Can give precedence to existing global colors" do
+			r=SimpleColor["red", :red]
+			SimpleColor.color(r, :blue, global_color: :before).must_equal "\e[34m\e[31mred\e[0m"
+		end
+
+		it "Will give precedence to local colors" do
+			r="foo "+SimpleColor["red", :red]+" bar"
+			SimpleColor.color(r, :blue).must_equal "\e[34mfoo \e[31mred\e[0m\e[34m bar\e[0m"
+			r="foo "+SimpleColor["red", :red]
+			SimpleColor.color(r, :blue).must_equal "\e[34mfoo \e[31mred\e[0m"
+			r=+SimpleColor["red", :red]+" bar"
+			SimpleColor.color(r, :blue).must_equal "\e[34m\e[31mred\e[0m\e[34m bar\e[0m"
+		end
+
+		it "Can get precedence over local colors" do
+			r="foo "+SimpleColor["red", :red]+" bar"
+			SimpleColor.color(r, :blue, local_color: :after).must_equal "\e[34mfoo \e[31m\e[34mred\e[0m\e[34m bar\e[0m"
+			r="foo "+SimpleColor["red", :red]
+			SimpleColor.color(r, :blue, local_color: :after).must_equal "\e[34mfoo \e[31m\e[34mred\e[0m"
+			r=+SimpleColor["red", :red]+" bar"
+			SimpleColor.color(r, :blue, local_color: :after).must_equal "\e[31m\e[34mred\e[0m\e[34m bar\e[0m"
+		end
+
+		it "Can keep local colors" do
+			r="foo "+SimpleColor["red", :red]+" bar"
+			SimpleColor.color(r, :blue, local_color: :keep).must_equal "\e[34mfoo \e[0m\e[31mred\e[0m\e[34m bar\e[0m"
+			r="foo "+SimpleColor["red", :red]
+			SimpleColor.color(r, :blue, local_color: :keep).must_equal "\e[34mfoo \e[0m\e[31mred\e[0m"
+			r=+SimpleColor["red", :red]+" bar"
+			SimpleColor.color(r, :blue, local_color: :keep).must_equal "\e[31mred\e[0m\e[34m bar\e[0m"
+		end
+	end
 end

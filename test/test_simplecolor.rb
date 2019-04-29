@@ -249,6 +249,17 @@ describe SimpleColor do
 			SimpleColor2.enabled=true
 		end
 
+		it "Can be mixed in a class" do
+			string_class=Class.new(String)
+			SimpleColor2.mix_in(string_class)
+			string_class.new("red").color(:red).must_equal "\e[31mred\e[0m"
+			SimpleColor.enabled=false
+			string_class.new("red").color(:red).must_equal "\e[31mred\e[0m"
+			SimpleColor2.enabled=false
+			string_class.new("red").color(:red).must_equal "red"
+			SimpleColor2.enabled=true
+		end
+
 		it "Setting a different color module copy the defaults opts and not the current opts" do
 
 			default_opts=SimpleColor.opts
@@ -317,6 +328,12 @@ describe SimpleColor do
 			SimpleColor.color(r, :blue, local_color: :keep).must_equal "\e[34mfoo \e[0m\e[31mred\e[0m"
 			r=+SimpleColor["red", :red]+" bar"
 			SimpleColor.color(r, :blue, local_color: :keep).must_equal "\e[31mred\e[0m\e[34m bar\e[0m"
+		end
+
+		it "Can store precedence settings" do
+			SimpleColor.opts[:global_color]=:keep
+			r=SimpleColor["red", :red]
+			SimpleColor.color(r, :blue).must_equal(SimpleColor["red", :red])
 		end
 	end
 end

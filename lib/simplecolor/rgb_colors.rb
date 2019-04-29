@@ -21,6 +21,7 @@ module SimpleColor
 			:intense_cyan		 => 14,
 			:intense_white	 => 15,
 		}
+		(0..15).each { |i| ANSI_COLORS_16[:"color#{i}"]=i}
 
 		# A list of color names for standard ansi colors, needed for 16/8 color fallback mode
 		# See https://en.wikipedia.org/wiki/ANSI_escape_code#Colors

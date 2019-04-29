@@ -14,8 +14,7 @@
 [paint]: https://github.com/janlelis/paint
 
 A simple library for coloring text output. Heavily inspired by [rainbow],
-[term-ansicolor] and [paint]. I recommend using these gems for more complex
-coloring needs. 
+[term-ansicolor] and [paint].
 
 By default this gem does not change the `String` class, unlike [rainbow]. The
 reason I wrote this gem is that when mixed in `String` it only adds two
@@ -77,13 +76,11 @@ $ gem install simplecolor
 
 This installs `v0.1.0`, the current `master` version may not work.
 
-## Todo
-
-- Support 256 colors
-- Tests
+When installing from git, you can regenerate the list of color names by
+running `data/rgb_colors.rb`.
 
 ## Copyright
 
-Copyright © 2013–2017 Damien Robert
+Copyright © 2013–2019 Damien Robert
 
 MIT License. See [LICENSE.txt](./LICENSE.txt) for details.

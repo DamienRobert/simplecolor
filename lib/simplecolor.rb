@@ -112,6 +112,10 @@ module SimpleColor
 		def clear
 			color(:clear)
 		end
+
+		def [](*args)
+			color(*args)
+		end
 	end
 
 	module Opts

@@ -64,6 +64,15 @@ def showcase
 	puts
 	puts
 
+	print SimpleColor[:red, :on_blue]
+	print "Red on blue "
+	print SimpleColor[:default]
+	print "back to default foreground "
+	print SimpleColor[:on_default]
+	print "back to default background."
+	puts
+	puts
+
 	puts "* 256 colors:"
 	puts "System palette:";
 	(0..7).each do |color|
@@ -146,36 +155,35 @@ def showcase
 
 	puts
 	cube= ->(start, to_end) do
-		print "Cube #{start.join} to #{to_end.join}: "
 		direction=(0..2).map {|i| to_end[i]-start[i]}
 		(0..255).each do |v|
 			rgb=(0..2).map {|i| start[i]*255 + v*direction[i]}
 			print SimpleColor.color(empty, SimpleColor::RGB.new(rgb, background: true))
 		end
+	end
+	print_cube = ->(*steps) do
+		print "Cube #{steps.map {|s| s.join}.join(" to ")}: "
+		(0...steps.length-1).each do |i|
+			cube[steps[i], steps[i+1]]
+			print " "
+		end
 		puts
 	end
-	cube[[0,0,0],[1,0,0]]
-	cube[[0,0,0],[0,1,0]]
-	cube[[0,0,0],[0,0,1]]
-	cube[[0,0,0],[0,1,1]]
-	cube[[0,0,0],[1,0,1]]
-	cube[[0,0,0],[1,1,0]]
+	print_cube[[0,0,0],[1,1,1]]
 
-	cube[[1,0,0],[1,1,0]]
-	cube[[1,0,0],[1,0,1]]
-	cube[[1,0,0],[1,1,1]]
+	print_cube[[0,0,0],[1,0,0],[1,1,1]]
+	print_cube[[0,0,0],[0,1,0],[1,1,1]]
+	print_cube[[0,0,0],[0,0,1],[1,1,1]]
 
-	cube[[0,1,0],[1,1,0]]
-	cube[[0,1,0],[0,1,1]]
-	cube[[0,1,0],[1,1,1]]
+	print_cube[[0,0,0],[0,1,1],[1,1,1]]
+	print_cube[[0,0,0],[1,0,1],[1,1,1]]
+	print_cube[[0,0,0],[1,1,0],[1,1,1]]
 
-	cube[[0,0,1],[1,0,1]]
-	cube[[0,0,1],[0,1,1]]
-	cube[[0,0,1],[1,1,1]]
+	print_cube[[1,0,0],[1,1,0], [0,1,0]]
 
-	cube[[0,1,1],[1,1,1]]
-	cube[[1,0,1],[1,1,1]]
-	cube[[1,1,0],[1,1,1]]
+	print_cube[[1,0,0],[1,0,1], [0,0,1]]
+
+	print_cube[[0,1,0],[0,1,1], [0,0,1]]
 
 	puts "* Effects"
 	effects=SimpleColor::Colorer::ANSI_EFFECTS

@@ -134,24 +134,7 @@ module SimpleColor
 
 		# Returns a colored version of the string (modified in place),
 		# according to attributes
-		def colorer(s,*attributes, **kwds)
-			if s.nil?
-				color_attributes(*attributes,**kwds)
-			elsif s.empty?
-				# We don't color an empty string; use nil to get color attributes
-				s
-			else
-				# we need to insert the ANSI sequences after existing ones so that
-				# the new colors have precedence
-				matched = s.match(regexp(:match, **kwds)) #since this has a '*' it matches at the beginning
-				attributes=color_attributes(*attributes,**kwds)
-				s.insert(matched.end(0), attributes)
-				s.concat(color_attributes(:clear,**kwds)) unless s =~ /#{regexp(:clear, **kwds)}$/ or attributes.empty?
-				s
-			end
-		end
-
-		def colorer2(s, *attributes, global_color: :after, local_color: :before, **kwds)
+		def colorer(s, *attributes, global_color: :after, local_color: :before, **kwds)
 			if s.nil?
 				color_attributes(*attributes,**kwds)
 			elsif s.empty?
@@ -196,7 +179,12 @@ module SimpleColor
 						elsif sp.match(/#{color_reg}/)
 							case local_color
 							when :keep
-								# do nothing
+								if i!=0
+									# we need to clear ourselves
+									s.insert(pos, clear)
+									pos+=clear.length
+								end
+								pos+=sp.length
 							when :before
 								#we already inserted ourselves except if we are on the
 								#first block
@@ -219,9 +207,9 @@ module SimpleColor
 						end
 					end
 				end
+				s.concat(clear) unless s =~ /#{clear_reg}$/ or colors.empty?
+				s
 			end
-			s.concat(clear) unless s =~ /#{clear_reg}$/ or colors.empty?
-			s
 		end
 
 		# Returns an uncolored version of the string, that is all

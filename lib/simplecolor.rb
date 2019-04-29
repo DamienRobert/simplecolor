@@ -35,10 +35,15 @@ module SimpleColor
 					b.call.to_s
 				elsif respond_to?(:to_str)
 					self.to_str
-				elsif args.first.respond_to?(:to_str)
-					args.shift.to_str
 				else
-					nil
+					first=args.first
+					if first.respond_to?(:to_str)
+						args.shift.to_str
+					elsif first.nil?
+						args.shift
+					else
+						nil
+					end
 				end
 				case m
 				when :color

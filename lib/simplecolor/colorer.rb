@@ -151,27 +151,73 @@ module SimpleColor
 			end
 		end
 
-		def colorer2
+		def colorer2(s, *attributes, global_color: :after, local_color: :before, **kwds)
+			if s.nil?
+				color_attributes(*attributes,**kwds)
+			elsif s.empty?
+				# We don't color an empty string; use nil to get color attributes
+				s
+			else
+				match_reg=regexp(:match, **kwds)
 				color_reg=regexp(:color, **kwds)
 				clear_reg=regexp(:clear, **kwds)
 				colors=color_attributes(*attributes,**kwds)
 				clear=color_attributes(:clear,**kwds)
-				pos=0
 
-				split=SimpleColor.color_strings(s, color_regexp: color_reg)
-				first=split.first
-				split.shift
-				if first&.match(color_reg)
-					pos+=first.length
-					s.insert(pos, colors)
-					pos+=colors.length
+				global=true
+				if (m=s.match(/.(#{color_reg})/))
+					matched=m[0]
+					global=false unless matched.match(/#{clear_reg}/) and m.end(0)==s.length
 				end
-				split.each do |sp|
-					if sp.match(/#{clear_reg}$/)
-						pos+=sp.length
-						s.insert(pos, colors)
+
+				if global
+					case global_color
+					when :keep
+					matched = s.match(match_reg)
+						s.insert(0, colors) unless matched.end(0)>0
+					when :before
+						s.insert(0, colors)
+					when :after
+						# we need to insert the ANSI sequences after existing ones so that
+						# the new colors have precedence
+						matched = s.match(match_reg) #since this has a '*' it matches at the beginning
+						s.insert(matched.end(0), colors)
+					end
+					s.concat(clear) unless s =~ /#{clear_reg}$/ or attributes.empty?
+					s
+				else
+					pos=0
+
+					split=SimpleColor.color_strings(s, color_regexp: color_reg)
+					first=true
+					split.each do |sp|
+						if sp.match(/#{clear_reg}$/)
+							pos+=sp.length
+							s.insert(pos, colors)
+							pos+=colors.length
+						elsif sp.match(/#{color_reg}/)
+							case local_color
+							when :keep
+								# do nothing
+							when :before
+								s.insert(pos, colors)
+								pos+=colors.length+sp.length
+							when :after
+								pos+=sp.length
+								s.insert(pos, colors)
+								pos+=colors.length
+							end
+						else
+							if first
+								s.insert(pos, colors)
+								pos+=colors.length
+							end
+							pos+=sp.length
+						end
+						first=false
 					end
 				end
+			end
 		end
 
 		# Returns an uncolored version of the string, that is all

@@ -73,11 +73,11 @@ module SimpleColor
 		}
 
 		module ColorNames
-			def custom_color_names
-				COLOR_NAMES
+			def color_names
+				@color_names ||= COLOR_NAMES.dup
 			end
 
-			def color_names
+			def all_color_names
 				return @rgb_color_names if defined? @rgb_color_names
 				# A list of color names, based on X11's rgb.txt
 				rgb_colors = File.dirname(__FILE__) + "/../../data/rgb_colors.json.gz"
@@ -100,13 +100,13 @@ module SimpleColor
 			end
 
 			def find_color(name)
-				custom=custom_color_names
+				custom=color_names
 				case name
 				when String
 					return custom[name] if custom.key?(name)
 					name=rgb_clean(name)
 					return custom[name] if custom.key?(name)
-					colors=color_names
+					colors=all_color_names
 					base, rest=name.split(':', 2)
 					if rest.nil?
 						color_names_priority.each do |base|

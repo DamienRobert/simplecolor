@@ -14,6 +14,24 @@ describe SimpleColor::RGB do
 	it "Can degrade to 8 colors" do
 		SimpleColor::RGB.new(10,20,30).convert(8).ansi.must_equal "30"
 	end
+
+	describe "List name" do
+		it "Can specify color names" do
+			SimpleColor::RGB.parse("lavender").to_hex.must_equal "#9F90D0"
+		end
+		it "Can specify the dict to use for color names" do
+			SimpleColor::RGB.parse("x11:lavender").to_hex.must_equal "#E6E6FA"
+		end
+		it "Can use custom names" do
+			SimpleColor::RGB.parse("solarized_base03").to_hex.must_equal "#002B36"
+		end
+		it "Custom names have precedence" do
+			SimpleColor::RGB.parse("verydarkbluishgreen").to_hex.must_equal "#002A29"
+			SimpleColor::RGB.color_names["verydarkbluishgreen"]="#002B30"
+			SimpleColor::RGB.parse("verydarkbluishgreen").to_hex.must_equal "#002B30"
+			SimpleColor::RGB.parse("nbs:verydarkbluishgreen").to_hex.must_equal "#002A29"
+		end
+	end
 end
 
 describe SimpleColor do

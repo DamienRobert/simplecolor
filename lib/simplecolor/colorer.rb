@@ -183,40 +183,45 @@ module SimpleColor
 						matched = s.match(match_reg) #since this has a '*' it matches at the beginning
 						s.insert(matched.end(0), colors)
 					end
-					s.concat(clear) unless s =~ /#{clear_reg}$/ or attributes.empty?
-					s
 				else
 					pos=0
-
-					first=true
-					split.each do |sp|
+					split.each_with_index do |sp,i|
 						if sp.match(/#{clear_reg}$/)
-							pos+=sp.length
-							s.insert(pos, colors)
-							pos+=colors.length
+							#don't reinsert ourselves at end
+							unless i==split.length-1
+								pos+=sp.length
+								s.insert(pos, colors)
+								pos+=colors.length
+							end
 						elsif sp.match(/#{color_reg}/)
 							case local_color
 							when :keep
 								# do nothing
 							when :before
-								s.insert(pos, colors)
-								pos+=colors.length+sp.length
+								#we already inserted ourselves except if we are on the
+								#first block
+								if i==0
+									s.insert(pos, colors)
+									pos+=colors.length
+								end
+								pos+=sp.length
 							when :after
 								pos+=sp.length
 								s.insert(pos, colors)
 								pos+=colors.length
 							end
 						else
-							if first
+							if i==0
 								s.insert(pos, colors)
 								pos+=colors.length
 							end
 							pos+=sp.length
 						end
-						first=false
 					end
 				end
 			end
+			s.concat(clear) unless s =~ /#{clear_reg}$/ or colors.empty?
+			s
 		end
 
 		# Returns an uncolored version of the string, that is all

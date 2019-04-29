@@ -66,7 +66,27 @@ module SimpleColor
 		def attributes_from_colors(s)
 			s.scan(Colorer.regexp(:ansi)).flat_map do |a|
 				next :reset if a=="\e[m" #alternative for reset
-				a[/\e\[(.*)m/,1].split(';').map {|c| Colorer.colors.key(c.to_i)}
+				stack=[]
+				# a[/\e\[(.*)m/,1].split(';').map {|c| Colorer.colors.key(c.to_i)}
+				codes=a[/\e\[(.*)m/,1].split(';')
+				i=0; while i<codes.length do
+					c=codes[i]
+					if c=="38" or c=="48"
+						if codes[i+1]=="5" #256 colors
+							v=codes[i+2]
+							stack << RGB.new(v.to_i, mode: 256, background: i=="48")
+							i+=3
+						elsif codes[i+1]=="2" #true colors
+							r=codes[i+2].to_i; g=codes[i+3].to_i; b=codes[i+4].to_i
+							stack << RGB.new([r,g,b], background: i=="48")
+							i+=5
+						end
+					else
+						stack << Colorer.colors.key(c.to_i)
+						i+=1
+					end
+				end
+				stack
 			end
 		end
 

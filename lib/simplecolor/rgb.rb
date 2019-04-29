@@ -158,7 +158,6 @@ module SimpleColor
 				@color=ANSI_COLORS_16[rgb] if ANSI_COLORS_16.key?(rgb)
 				raise WrongRGBColor.new(rgb) unless @color.is_a?(Numeric)
 			end
-			# TODO raise when wrong color passed
 		end
 
 		def truecolor?
@@ -195,7 +194,14 @@ module SimpleColor
 			return self.convert(convert, only_down: true).ansi(background: background, convert: nil) if convert
 			case @mode
 			when 8, 16
-				"#{background ? 4 : 3}#{@color}"
+				if @color < 8
+					"#{background ? 4 : 3}#{@color}"
+				else
+					# Note that on_intense_* is not supported by terminals
+					# it is usually better to convert to 256 colors palette which is
+					# better supported
+					"#{background ? 10 : 9}#{@color-8}"
+				end
 			when 256
 				"#{background ? 48 : 38};5;#{@color}"
 			when :truecolor

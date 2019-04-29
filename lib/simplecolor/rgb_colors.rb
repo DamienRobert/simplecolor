@@ -89,16 +89,37 @@ module SimpleColor
 					# serialized_data.force_encoding Encoding::BINARY
 					@rgb_color_names = JSON.parse(serialized_data)
 				end
-				@rgb_color_names.merge!(custom_color_names)
+			end
+
+			def color_names_priority
+				@rgb_color_names.keys
 			end
 
 			def rgb_clean(name) #clean up name
-				name.gsub(/\s+/,'').downcase.sub('gray','grey')
+				name.gsub(/\s+/,'').downcase.gsub('gray','grey')
 			end
 
 			def find_color(name)
-				cleaned=name.is_a?(String) ? rgb_clean(name) : name
-				color_names[cleaned]
+				custom=custom_color_names
+				case name
+				when String
+					return custom[name] if custom.key?(name)
+					name=rgb_clean(name)
+					return custom[name] if custom.key?(name)
+					colors=color_names
+					base, rest=name.split(':', 2)
+					if rest.nil?
+						color_names_priority.each do |base|
+							c=colors[base]
+							return c[name] if c.key?(name)
+						end
+					else
+						c=colors[base]
+						return c[rest]
+					end
+				else
+					custom[name]
+				end
 			end
 		end
 		extend ColorNames

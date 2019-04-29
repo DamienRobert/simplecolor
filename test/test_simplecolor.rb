@@ -55,15 +55,15 @@ describe SimpleColor do
 	end
 
 	it "Can only show color escape when passed nil" do
-		SimpleColor.color(nil, "lavender").must_equal "\e[38;2;230;230;250m"
+		SimpleColor.color(nil, "x11:lavender").must_equal "\e[38;2;230;230;250m"
 	end
 
 	it "Accepts a block as color parameter" do
-		SimpleColor.color("foo", proc { "lavender" }).must_equal "\e[38;2;230;230;250mfoo\e[0m"
+		SimpleColor.color("foo", proc { "x11:lavender" }).must_equal "\e[38;2;230;230;250mfoo\e[0m"
 	end
 
 	it "Proc as color parameter can return multiple values" do
-		SimpleColor.color("foo", proc { ["lavender", :bold] }).must_equal "\e[38;2;230;230;250;1mfoo\e[0m"
+		SimpleColor.color("foo", proc { ["x11:lavender", :bold] }).must_equal "\e[38;2;230;230;250;1mfoo\e[0m"
 	end
 
 	it "Has default options" do
@@ -72,7 +72,7 @@ describe SimpleColor do
 
 	describe "Abbreviations" do
 		before do
-			SimpleColor.abbreviations={red: SimpleColor.color(:green), color1: SimpleColor.color(nil, "lavender")}
+			SimpleColor.abbreviations={red: SimpleColor.color(:green), color1: SimpleColor.color(nil, "x11:lavender")}
 		end
 
 		it "Can use the color1 abbreviations" do
@@ -278,7 +278,7 @@ describe SimpleColor do
 		end
 
 		it "Raises when we pass invalid rgb parameter" do
-			proc { SimpleColor.color("foo", "lavender", color_mode:10)}.must_raise SimpleColor::WrongRGBParameter
+			proc { SimpleColor.color("foo", "x11:lavender", color_mode:10)}.must_raise SimpleColor::WrongRGBParameter
 		end
 
 		it "Raises when we pass an invalid color" do

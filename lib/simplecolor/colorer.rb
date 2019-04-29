@@ -164,11 +164,11 @@ module SimpleColor
 				colors=color_attributes(*attributes,**kwds)
 				clear=color_attributes(:clear,**kwds)
 
-				global=true
-				if (m=s.match(/.(#{color_reg})/))
-					matched=m[0]
-					global=false unless matched.match(/#{clear_reg}/) and m.end(0)==s.length
+				split=SimpleColor.color_strings(s, color_regexp: color_reg)
+				sp, i=split.each_with_index.find do |sp, i|
+					i>=1 && sp.match(/#{color_reg}/)
 				end
+				global=true unless sp and (i<split.length-1 || !sp.match(/#{clear_reg}$/))
 
 				if global
 					case global_color
@@ -188,7 +188,6 @@ module SimpleColor
 				else
 					pos=0
 
-					split=SimpleColor.color_strings(s, color_regexp: color_reg)
 					first=true
 					split.each do |sp|
 						if sp.match(/#{clear_reg}$/)

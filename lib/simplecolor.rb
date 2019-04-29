@@ -74,11 +74,11 @@ module SimpleColor
 					if c=="38" or c=="48"
 						if codes[i+1]=="5" #256 colors
 							v=codes[i+2]
-							stack << RGB.new(v.to_i, mode: 256, background: i=="48")
+							stack << RGB.new(v.to_i, mode: 256, background: c=="48")
 							i+=3
 						elsif codes[i+1]=="2" #true colors
 							r=codes[i+2].to_i; g=codes[i+3].to_i; b=codes[i+4].to_i
-							stack << RGB.new([r,g,b], background: i=="48")
+							stack << RGB.new([r,g,b], background: c=="48")
 							i+=5
 						end
 					else

@@ -208,6 +208,14 @@ describe SimpleColor do
 			SimpleColor.attributes_from_colors("\e[m"+b+e).must_equal([:reset,:red,:bright,:reset])
 		end
 
+		it "Can detect 256 and truecolor attributes" do
+			test=SimpleColor[nil, "rgb256:3", "on_rgb:1:2:3", :green, :bold, :conceal, :color15]
+			expected=[SimpleColor::RGB.new(3, mode: 256),
+				SimpleColor::RGB.new([1,2,3], background: true),
+				:green, :bright, :conceal, :intense_white]
+			SimpleColor.attributes_from_colors(test).must_equal(expected)
+		end
+
 		it "Can split a string into color entities" do
 			SimpleColor.color_entities(SimpleColor.color("red",:red,:bold)+SimpleColor.color("blue",:blue)).must_equal(["\e[31;1m", "r", "e", "d", "\e[0m\e[34m", "b", "l", "u", "e", "\e[0m"])
 			SimpleColor.color_entities("blue "+SimpleColor.color("red",:red,:bold)+" green").must_equal(["b", "l", "u", "e", " ", "\e[31;1m", "r", "e", "d", "\e[0m", " ", "g", "r", "e", "e", "n"])

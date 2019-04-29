@@ -160,6 +160,12 @@ module SimpleColor
 			end
 		end
 
+		def ==(other)
+			[:color, :mode, :background].all? do |sym|
+				self.public_send(sym) == other.public_send(sym)
+			end
+		end
+
 		def truecolor?
 			@mode == :truecolor
 		end

@@ -10,6 +10,8 @@ license: MIT
 authors: Damien Robert
 email: Damien.Olivier.Robert+gems@gmail.com
 homepage: https://github.com/DamienRobert/simplecolor
+files:
+- data/rgb_colors.json.gz
 
 development_dependencies:
   minitest: "~> 5.0"

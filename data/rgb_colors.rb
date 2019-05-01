@@ -34,13 +34,32 @@ def load_colors
 	@xkcd=read_file("xkcd_colors.json")
 	@resene=read_file("Resene2010_colors.json")
 	@nbs=read_file("NBS-ISCC_colors.json")
+	@colorschemes={
+		"solarized_base03"  => "#002b36",
+		"solarized_base02"  => "#073642",
+		"solarized_base01"  => "#586e75",
+		"solarized_base00"  => "#657b83",
+		"solarized_base0"   => "#839496",
+		"solarized_base1"   => "#93a1a1",
+		"solarized_base2"   => "#eee8d5",
+		"solarized_base3"   => "#fdf6e3",
+		"solarized_yellow"  => "#b58900",
+		"solarized_orange"  => "#cb4b16",
+		"solarized_red"     => "#dc322f",
+		"solarized_magenta" => "#d33682",
+		"solarized_violet"  => "#6c71c4",
+		"solarized_blue"    => "#268bd2",
+		"solarized_cyan"    => "#2aa198",
+		"solarized_green"   => "#859900",
+	}
 
 	@keys=->(h) {h.keys.map {|i| SimpleColor::RGB.rgb_clean(i)}}
 end
 
 def merge_colors
 	h={}
-	%i(nbs resene x11 xkcd).each do |i|
+	# first means higher priority for the search
+	%i(nbs resene x11 xkcd colorschemes).each do |i|
 		h[i]={}
 		col=instance_variable_get(:"@#{i}")
 		col.each do |k,v|

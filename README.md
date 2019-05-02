@@ -74,10 +74,17 @@ None.
 $ gem install simplecolor
 ~~~
 
-This installs `v0.1.0`, the current `master` version may not work.
+This installs `v0.3.0`, the current `master` version may not work.
 
 When installing from git, you can regenerate the list of color names by
 running `data/rgb_colors.rb`.
+
+## TODO
+
+- Autodetect color capabilities (using COLORTERM)
+- Use terminfo settings when possible
+- Better color conversion (RGB is non linear)
+- Utilities to darken/lighten colors
 
 ## Copyright
 

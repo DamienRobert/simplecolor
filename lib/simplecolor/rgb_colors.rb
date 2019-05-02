@@ -99,7 +99,7 @@ module SimpleColor
 						end
 					else
 						c=colors[base]
-						return c[rest]
+						return c[rest] if c
 					end
 				else
 					custom[name]

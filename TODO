@@ -1,0 +1,2 @@
+Add support for url? Cf https://github.com/piotrmurach/tty-link
+Write a more flexible color/truecolor api

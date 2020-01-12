@@ -30,7 +30,7 @@ module SimpleColor
 		#		SimpleColor.color(:blue,:bold) { "blue" }
 		#		SimpleColor.color(:blue,:bold) << "blue" << SimpleColor.color(:clear)
 		%i(color uncolor color! uncolor! color?).each do |m|
-			define_method m do |*args, &b|
+			define_method m do |*args, **kwds, &b|
 				arg=if b
 					b.call.to_s
 				elsif respond_to?(:to_str)
@@ -47,15 +47,15 @@ module SimpleColor
 				end
 				case m
 				when :color
-					Colorer.colorer(arg.dup,*args)
+					Colorer.colorer(arg.dup,*args,**kwds)
 				when :uncolor
-					Colorer.uncolorer(arg.dup,*args)
+					Colorer.uncolorer(arg.dup,*args,**kwds)
 				when :color!
-					Colorer.colorer(arg,*args)
+					Colorer.colorer(arg,*args,**kwds)
 				when :uncolor!
-					Colorer.uncolorer(arg,*args)
+					Colorer.uncolorer(arg,*args,**kwds)
 				when :color?
-					Colorer.colored?(arg,*args)
+					Colorer.colored?(arg,*args,**kwds)
 				end
 			end
 		end

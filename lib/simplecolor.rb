@@ -180,10 +180,13 @@ module SimpleColor
 		def self.define_color_methods(klass, *methods, opts_from: nil, color_module: ColorWrapper)
 			methods=color_module.instance_methods if methods.empty?
 			methods.each do |m|
-				klass.define_method m do |*args, **l_opts, &b|
-					opts= opts_from ? opts_from.opts : self.opts
-					opts=opts.merge(l_opts)
-					color_module.instance_method(m).bind(self).call(*args, **opts, &b)
+				# klass.define_method m do |*args, **l_opts, &b|
+				klass.class_eval do
+					define_method m do |*args, **l_opts, &b|
+						opts= opts_from ? opts_from.opts : self.opts
+						opts=opts.merge(l_opts)
+						color_module.instance_method(m).bind(self).call(*args, **opts, &b)
+					end
 				end
 			end
 		end

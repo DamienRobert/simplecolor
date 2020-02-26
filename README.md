@@ -1,10 +1,12 @@
 # simplecolor
 
-* [Homepage](https://github.com/DamienRobert/simplecolor)
+* [Homepage](https://github.com/DamienRobert/simplecolor#readme)
+* [Issues](https://github.com/DamienRobert/simplecolor/issues)
 * [Documentation](http://rubydoc.info/gems/simplecolor)
 * [Email](mailto:Damien.Olivier.Robert+gems@gmail.com)
 
 [![Gem Version](https://img.shields.io/gem/v/simplecolor.svg)](https://rubygems.org/gems/simplecolor)
+[![Ruby test result](https://github.com/DamienRobert/simplecolor/workflows/Ruby/badge.svg)](https://github.com/DamienRobert/simplecolor/actions?query=workflow%3ARuby)
 [![Build Status](https://travis-ci.org/DamienRobert/simplecolor.svg?branch=master)](https://travis-ci.org/DamienRobert/simplecolor)
 
 ## Description

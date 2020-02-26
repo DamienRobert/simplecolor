@@ -47,9 +47,13 @@ module SimpleColor
 				end
 				case m
 				when :color
-					Colorer.colorer(arg.dup,*args,**kwds)
+				  # the rescue is here for ruby 2.3 which can't dup Nilclass.
+				  # Newer versions of ruby don't need it
+				  duped = arg.dup rescue arg
+					Colorer.colorer(duped,*args,**kwds)
 				when :uncolor
-					Colorer.uncolorer(arg.dup,*args,**kwds)
+				  duped = arg.dup rescue arg
+					Colorer.uncolorer(duped,*args,**kwds)
 				when :color!
 					Colorer.colorer(arg,*args,**kwds)
 				when :uncolor!

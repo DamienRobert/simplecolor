@@ -39,7 +39,9 @@ module SimpleColor
 				symbol=s.is_a?(Symbol)
 				truecol=/(?<truecol>(?:truecolor|true|t):)?/
 				on=/(?<on>on_)?/
-				s.match(/\A#{truecol}#{on}(?<rest>.*)\z/) do |m|
+				# the to_s is because of a bug in truffleruby where
+				# `s.match(...) do end` does not work with symbols
+				s.to_s.match(/\A#{truecol}#{on}(?<rest>.*)\z/) do |m|
 					tcol=m[:truecol]; on=m[:on]; string=m[:rest]
 					lcolormode = tcol ? :truecolor : color_mode
 					string=string.to_sym if symbol

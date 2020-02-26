@@ -88,6 +88,6 @@ running `data/rgb_colors.rb`.
 
 ## Copyright
 
-Copyright © 2013–2019 Damien Robert
+Copyright © 2013–2020 Damien Robert
 
 MIT License. See [LICENSE.txt](./LICENSE.txt) for details.
